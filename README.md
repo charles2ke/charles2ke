@@ -36,6 +36,7 @@ charles2ke/charles2ke
 This list is refreshed automatically to keep new repositories visible on my profile.
 
 <!-- repo-links:start -->
+- [design-patterns](https://github.com/charles2ke/design-patterns) — Design Patterns every Engineer should be aware
 - [travel](https://github.com/charles2ke/travel) — Explore.. Dream.. Discover..
 - [workout](https://github.com/charles2ke/workout) — My weekly workout plan
 <!-- repo-links:end -->
