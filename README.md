@@ -17,7 +17,9 @@ This is my **GitHub profile repository** (`charles2ke/charles2ke`). The `README.
 
 ```
 charles2ke/charles2ke
-└── README.md   ← This file (displayed on GitHub profile)
+├── .github/workflows/update-repo-links.yml   ← Keeps repo links current
+├── README.md                                 ← Displayed on GitHub profile
+└── scripts/update_repo_links.py              ← Rebuilds the repo list
 ```
 
 ### About This Repo
@@ -28,6 +30,15 @@ charles2ke/charles2ke
 | **Purpose** | Personal introduction displayed on GitHub profile |
 | **Technology** | Markdown |
 | **Visibility** | Public |
+
+## 🔗 Other Repositories
+
+This list is refreshed automatically to keep new repositories visible on my profile.
+
+<!-- repo-links:start -->
+- [travel](https://github.com/charles2ke/travel) — Explore.. Dream.. Discover..
+- [workout](https://github.com/charles2ke/workout) — My weekly workout plan
+<!-- repo-links:end -->
 
 ---
 
