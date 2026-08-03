@@ -14,6 +14,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   update-readme:
@@ -33,15 +34,23 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python scripts/update_repo_links.py
 
-      - name: Commit updated README
-        run: |
-          if git diff --quiet README.md; then
-            echo "No README changes to commit."
-            exit 0
-          fi
+      - name: Raise PR on findings
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: auto/update-repo-links
+          commit-message: "chore: update repository links"
+          title: "chore: auto-update repository links"
+          body: |
+            Automated update from the scheduled `update-repo-links` workflow.
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add README.md
-          git commit -m "Update repository links"
-          git push
+            New or updated repositories were detected and the README has been refreshed.
+
+            ## Checklist
+
+            - [x] Scope is complete and minimal
+            - [x] Diff has been reviewed for unrelated changes
+            - [x] No secrets or sensitive data are included
+            - [x] Documentation has been updated if behavior changed
+          labels: automated
+          delete-branch: true

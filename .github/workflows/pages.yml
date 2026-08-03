@@ -1,0 +1,61 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - README.md
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Pages
+        uses: actions/configure-pages@v5
+
+      - name: Install pandoc
+        run: sudo apt-get install -y pandoc
+
+      - name: Convert README to HTML
+        run: |
+          mkdir -p _site
+          pandoc README.md \
+            --from markdown \
+            --to html5 \
+            --standalone \
+            --metadata title="Charles | GitHub Profile" \
+            --css https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown.min.css \
+            --output _site/index.html
+          # Wrap in GitHub markdown body class for styling
+          sed -i 's/<body>/<body class="markdown-body" style="max-width:800px;margin:2rem auto;padding:0 1rem;">/' _site/index.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
