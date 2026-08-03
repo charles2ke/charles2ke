@@ -11,7 +11,6 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-
 REPO_OWNER = "charles2ke"
 PROFILE_REPO = f"{REPO_OWNER}/{REPO_OWNER}"
 README_PATH = Path(__file__).resolve().parents[1] / "README.md"
