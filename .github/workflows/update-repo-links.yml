@@ -13,8 +13,7 @@ on:
     - cron: "0 * * * *"
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   update-readme:
@@ -34,23 +33,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python scripts/update_repo_links.py
 
-      - name: Raise PR on findings
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: auto/update-repo-links
-          commit-message: "chore: update repository links"
-          title: "chore: auto-update repository links"
-          body: |
-            Automated update from the scheduled `update-repo-links` workflow.
-
-            New or updated repositories were detected and the README has been refreshed.
-
-            ## Checklist
-
-            - [x] Scope is complete and minimal
-            - [x] Diff has been reviewed for unrelated changes
-            - [x] No secrets or sensitive data are included
-            - [x] Documentation has been updated if behavior changed
-          labels: automated
-          delete-branch: true
+      - name: Report repository link changes
+        run: |
+          if git diff --quiet -- README.md; then
+            echo "README repository links are already up to date." >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "README repository links need to be updated."
+              echo
+              echo "The generated diff is shown below. Repository rules prevent this workflow from pushing an automated branch."
+              echo
+              echo '```diff'
+              git diff -- README.md
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi

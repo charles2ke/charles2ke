@@ -17,7 +17,7 @@ This is my **GitHub profile repository** (`charles2ke/charles2ke`). The `README.
 
 ```
 charles2ke/charles2ke
-├── .github/workflows/update-repo-links.yml   ← Keeps repo links current
+├── .github/workflows/update-repo-links.yml   ← Checks repo links
 ├── README.md                                 ← Displayed on GitHub profile
 └── scripts/update_repo_links.py              ← Rebuilds the repo list
 ```
@@ -33,7 +33,7 @@ charles2ke/charles2ke
 
 ## 🔗 Other Repositories
 
-This list is refreshed automatically to keep new repositories visible on my profile.
+This list is checked automatically to keep new repositories visible on my profile.
 
 <!-- repo-links:start -->
 - [design-patterns](https://github.com/charles2ke/design-patterns) — Design Patterns every Engineer should be aware
