@@ -43,8 +43,6 @@ jobs:
               echo
               echo "The generated diff is shown below. Repository rules prevent this workflow from pushing an automated branch."
               echo
-              echo '```diff'
-              git diff -- README.md
-              echo '```'
+              git diff -- README.md | sed 's/^/    /'
             } >> "$GITHUB_STEP_SUMMARY"
           fi
