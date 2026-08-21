@@ -10,10 +10,10 @@ on:
       - scripts/update_repo_links.py
       - .github/workflows/update-repo-links.yml
   schedule:
-    - cron: "0 * * * *"
+    - cron: "0 0 * * 5"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   update-readme:
@@ -33,16 +33,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python scripts/update_repo_links.py
 
-      - name: Report repository link changes
+      - name: Commit refreshed repository links
         run: |
           if git diff --quiet -- README.md; then
             echo "README repository links are already up to date." >> "$GITHUB_STEP_SUMMARY"
           else
-            {
-              echo "README repository links need to be updated."
-              echo
-              echo "The generated diff is shown below. Repository rules prevent this workflow from pushing an automated branch."
-              echo
-              git diff -- README.md | sed 's/^/    /'
-            } >> "$GITHUB_STEP_SUMMARY"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add README.md
+            git commit -m "Update repository links"
+            git push
+            echo "README repository links were updated." >> "$GITHUB_STEP_SUMMARY"
           fi

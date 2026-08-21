@@ -36,6 +36,9 @@ charles2ke/charles2ke
 This list is checked automatically to keep new repositories visible on my profile.
 
 <!-- repo-links:start -->
+- [Agent-Chaos-Monkey](https://github.com/charles2ke/Agent-Chaos-Monkey) — Deliberately inject connector failures, latency, bad responses, expired auth and malformed data to test whether agents recover safely
+- [Message-Flow](https://github.com/charles2ke/Message-Flow) — Chain of Responsibility pattern
+- [Portfolio-Watcher](https://github.com/charles2ke/Portfolio-Watcher) — Take care of all your Financial Portfolio in one place
 - [design-patterns](https://github.com/charles2ke/design-patterns) — Design Patterns every Engineer should be aware
 - [travel](https://github.com/charles2ke/travel) — Explore.. Dream.. Discover..
 - [workout](https://github.com/charles2ke/workout) — My weekly workout plan
