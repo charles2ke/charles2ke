@@ -37,9 +37,14 @@ This list is checked automatically to keep new repositories visible on my profil
 
 <!-- repo-links:start -->
 - [Agent-Chaos-Monkey](https://github.com/charles2ke/Agent-Chaos-Monkey) — Deliberately inject connector failures, latency, bad responses, expired auth and malformed data to test whether agents recover safely
-- [Message-Flow](https://github.com/charles2ke/Message-Flow) — Chain of Responsibility pattern
-- [Portfolio-Watcher](https://github.com/charles2ke/Portfolio-Watcher) — Take care of all your Financial Portfolio in one place
+- [basa](https://github.com/charles2ke/basa) — Home, Ghar, Bari - Elder Care Circle Dashboard
 - [design-patterns](https://github.com/charles2ke/design-patterns) — Design Patterns every Engineer should be aware
+- [Message-Flow](https://github.com/charles2ke/Message-Flow) — Chain of Responsibility pattern
+- [Nakshatra](https://github.com/charles2ke/Nakshatra) — Online Shopping
+- [Night-Sky](https://github.com/charles2ke/Night-Sky) — Generate a realistic, consistent visual reconstruction of the night sky for a user-specified date and location, matching the established panoramic night-sky style.
+- [OpenTrading](https://github.com/charles2ke/OpenTrading) — Trading Platform to buy and sell stocks on different exchanges around the world
+- [Portfolio-Watcher](https://github.com/charles2ke/Portfolio-Watcher) — Take care of all your Financial Portfolio in one place
+- [tax-break](https://github.com/charles2ke/tax-break) — Online Taxation System
 - [travel](https://github.com/charles2ke/travel) — Explore.. Dream.. Discover..
 - [workout](https://github.com/charles2ke/workout) — My weekly workout plan
 <!-- repo-links:end -->
@@ -51,6 +56,6 @@ This list is checked automatically to keep new repositories visible on my profil
 Feel free to reach out or explore my other repositories. I'm always open to new ideas and collaborations!
 
 <!---
-charles2ke/charles2ke is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+charles2ke/charles2ke is a ✨ special ✨ repository because the `README.md` (this file) appears on your GitHub profile.
 You can click the Preview link to take a look at your changes.
 --->
