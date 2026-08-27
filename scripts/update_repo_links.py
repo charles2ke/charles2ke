@@ -17,6 +17,39 @@ README_PATH = Path(__file__).resolve().parents[1] / "README.md"
 SECTION_START = "<!-- repo-links:start -->"
 SECTION_END = "<!-- repo-links:end -->"
 API_URL = "https://api.github.com/users/{owner}/repos?per_page=100&page={page}&type=owner&sort=full_name"
+BADGE_URL = "https://img.shields.io/badge/{label}-{message}-{color}?style=flat-square"
+FIELD_COLOR = "0A66C2"
+VALUE_COLOR = "2EA043"
+DEFAULT_BADGES = ("Software Engineering", "Hands-on learning and experimentation")
+
+# Repository name (case-insensitive) → (field it impacts, value it adds).
+REPO_BADGES: dict[str, tuple[str, str]] = {
+    "agent-chaos-monkey": ("Reliability Engineering", "Safer agent failure recovery"),
+    "basa": ("Elder Care", "Coordinated caregiving"),
+    "design-patterns": ("Software Design", "Reusable design knowledge"),
+    "graphql": ("API Engineering", "Flexible data access"),
+    "message-flow": ("Software Design", "Decoupled message handling"),
+    "nakshatra": ("E-Commerce", "Streamlined online shopping"),
+    "night-sky": ("Astronomy Visualisation", "Accurate sky reconstruction"),
+    "opentrading": ("FinTech", "Global trade execution"),
+    "portfolio-watcher": ("Personal Finance", "Unified portfolio view"),
+    "tax-break": ("Taxation", "Simplified tax filing"),
+    "travel": ("Travel", "Easier trip discovery"),
+    "workout": ("Health and Fitness", "Consistent training habits"),
+}
+
+
+def _badge(label: str, message: str, color: str) -> str:
+    def encode(value: str) -> str:
+        return urllib.parse.quote(value.replace("-", "--").replace("_", "__"), safe="")
+
+    source = BADGE_URL.format(label=encode(label), message=encode(message), color=color)
+    return f'<img alt="{label}: {message}" src="{source}">'
+
+
+def build_badges(name: str) -> str:
+    field, value = REPO_BADGES.get(name.casefold(), DEFAULT_BADGES)
+    return f"{_badge('Field', field, FIELD_COLOR)} {_badge('Value', value, VALUE_COLOR)}"
 
 
 def fetch_repositories(owner: str) -> list[dict[str, object]]:
@@ -61,16 +94,19 @@ def build_repo_lines(repositories: list[dict[str, object]]) -> str:
         html_url = str(repo.get("html_url", "")).strip()
         description = " ".join(str(repo.get("description") or "No description provided.").split())
 
-        entries.append((name, f"[{name}]({html_url}) — {description}"))
+        entries.append((name, f"[{name}]({html_url}) — {description}", build_badges(name)))
 
     entries.sort(key=lambda entry: entry[0].casefold())
 
     if not entries:
         return "1. No repositories to show yet."
 
-    return "\n".join(
-        f"{position}. {line}" for position, (_, line) in enumerate(entries, start=1)
-    )
+    lines = []
+    for position, (_, line, badges) in enumerate(entries, start=1):
+        marker = f"{position}. "
+        lines.append(f"{marker}{line}\n{' ' * len(marker)}{badges}")
+
+    return "\n".join(lines)
 
 
 def update_readme(section_body: str) -> bool:

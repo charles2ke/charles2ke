@@ -13,9 +13,12 @@ from unittest.mock import MagicMock, patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts.update_repo_links import (
+    DEFAULT_BADGES,
     PROFILE_REPO,
+    REPO_BADGES,
     SECTION_END,
     SECTION_START,
+    build_badges,
     build_repo_lines,
     update_readme,
 )
@@ -53,7 +56,7 @@ class TestBuildRepoLines(unittest.TestCase):
             {"full_name": "charles2ke/alpha", "name": "alpha", "html_url": "https://github.com/charles2ke/alpha", "fork": False, "description": "Alpha"},
         ]
         result = build_repo_lines(repos)
-        lines = result.splitlines()
+        lines = [line for line in result.splitlines() if line.lstrip().startswith(("1.", "2."))]
         self.assertEqual(len(lines), 2)
         self.assertIn("alpha", lines[0])
         self.assertIn("beta", lines[1])
@@ -64,7 +67,7 @@ class TestBuildRepoLines(unittest.TestCase):
             for index in range(1, 4)
         ]
         result = build_repo_lines(repos)
-        lines = result.splitlines()
+        lines = [line for line in result.splitlines() if not line.startswith(" ")]
         self.assertTrue(lines[0].startswith("1. ["))
         self.assertTrue(lines[1].startswith("2. ["))
         self.assertTrue(lines[2].startswith("3. ["))
@@ -76,7 +79,7 @@ class TestBuildRepoLines(unittest.TestCase):
             {"full_name": "charles2ke/banana", "name": "banana", "html_url": "https://github.com/charles2ke/banana", "fork": False, "description": "Banana"},
         ]
         result = build_repo_lines(repos)
-        lines = result.splitlines()
+        lines = [line for line in result.splitlines() if not line.startswith(" ")]
         self.assertIn("Apple", lines[0])
         self.assertIn("banana", lines[1])
         self.assertIn("zebra", lines[2])
@@ -85,7 +88,31 @@ class TestBuildRepoLines(unittest.TestCase):
         repos = [{"full_name": "charles2ke/spaced", "name": "spaced", "html_url": "https://github.com/charles2ke/spaced", "fork": False, "description": "  too   many   spaces  "}]
         result = build_repo_lines(repos)
         self.assertIn("too many spaces", result)
-        self.assertNotIn("  ", result.split("— ")[1])
+        self.assertNotIn("  ", result.split("— ")[1].splitlines()[0])
+
+
+class TestBuildBadges(unittest.TestCase):
+    def test_known_repo_uses_mapped_field_and_value(self):
+        field, value = REPO_BADGES["workout"]
+        badges = build_badges("workout")
+        self.assertIn(f'alt="Field: {field}"', badges)
+        self.assertIn(f'alt="Value: {value}"', badges)
+
+    def test_lookup_is_case_insensitive(self):
+        self.assertEqual(build_badges("WORKOUT"), build_badges("workout"))
+
+    def test_unknown_repo_falls_back_to_defaults(self):
+        badges = build_badges("unlisted-repo")
+        self.assertIn(f'alt="Field: {DEFAULT_BADGES[0]}"', badges)
+        self.assertIn(f'alt="Value: {DEFAULT_BADGES[1]}"', badges)
+
+    def test_hyphens_are_escaped_in_badge_url(self):
+        badges = build_badges("Nakshatra")
+        self.assertIn("Field-E--Commerce-", badges)
+
+    def test_spaces_are_url_encoded(self):
+        badges = build_badges("workout")
+        self.assertIn("Health%20and%20Fitness", badges)
 
 
 class TestUpdateReadme(unittest.TestCase):
