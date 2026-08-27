@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import json
 import os
 import re
@@ -44,7 +45,8 @@ def _badge(label: str, message: str, color: str) -> str:
         return urllib.parse.quote(value.replace("-", "--").replace("_", "__"), safe="")
 
     source = BADGE_URL.format(label=encode(label), message=encode(message), color=color)
-    return f'<img alt="{label}: {message}" src="{source}">'
+    alt = html.escape(f"{label}: {message}", quote=True)
+    return f'<img alt="{alt}" src="{source}">'
 
 
 def build_badges(name: str) -> str:
