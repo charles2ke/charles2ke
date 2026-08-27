@@ -1,5 +1,14 @@
 # Hi there, I'm Charles 👋
 
+## 🌐 Connect With Me
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-charles2ke-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/charles2ke)
+
+- 💼 **LinkedIn:** [linkedin.com/in/charles2ke](https://www.linkedin.com/in/charles2ke)
+- 📫 **Email:** [Charles2ke@hotmail.com](mailto:Charles2ke@hotmail.com)
+
+---
+
 ## About Me
 
 - 👀 I'm interested in **Software Engineering** — building reliable, scalable, and well-crafted software
