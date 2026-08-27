@@ -106,7 +106,7 @@ def build_repo_lines(repositories: list[dict[str, object]]) -> str:
     lines = []
     for position, (_, line, badges) in enumerate(entries, start=1):
         marker = f"{position}. "
-        lines.append(f"{marker}{line}\n{' ' * len(marker)}{badges}")
+        lines.append(f"{marker}{line} \n{' ' * len(marker)}{badges}")
 
     return "\n".join(lines)
 

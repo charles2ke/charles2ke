@@ -19,6 +19,7 @@ from scripts.update_repo_links import (
     REPO_BADGES,
     SECTION_END,
     SECTION_START,
+    _badge,
     build_badges,
     build_repo_lines,
     update_readme,
@@ -114,6 +115,10 @@ class TestBuildBadges(unittest.TestCase):
     def test_spaces_are_url_encoded(self):
         badges = build_badges("workout")
         self.assertIn("Health%20and%20Fitness", badges)
+
+    def test_underscores_are_escaped_in_badge_url(self):
+        badge = _badge("Field", "Data_Engineering", "0A66C2")
+        self.assertIn("Field-Data__Engineering-", badge)
 
 
 class TestUpdateReadme(unittest.TestCase):
