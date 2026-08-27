@@ -39,7 +39,7 @@ The [`Update repository links`](.github/workflows/update-repo-links.yml) workflo
 
 - **hourly**, so a repository created at any time is picked up shortly afterwards
 - **on demand**, via `workflow_dispatch`
-- **immediately after a repository is created**, via a `repo-created` [`repository_dispatch`](https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event) event:
+- **on demand, right after creating a repository**, by manually sending a `repo-created` [`repository_dispatch`](https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event) event:
 
 ```bash
 gh api repos/charles2ke/charles2ke/dispatches -f event_type=repo-created
