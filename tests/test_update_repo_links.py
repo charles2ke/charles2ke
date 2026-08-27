@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import re
 import sys
 import textwrap
 import unittest
@@ -56,7 +57,7 @@ class TestBuildRepoLines(unittest.TestCase):
             {"full_name": "charles2ke/alpha", "name": "alpha", "html_url": "https://github.com/charles2ke/alpha", "fork": False, "description": "Alpha"},
         ]
         result = build_repo_lines(repos)
-        lines = [line for line in result.splitlines() if line.lstrip().startswith(("1.", "2."))]
+        lines = [line for line in result.splitlines() if re.match(r"\d+\. ", line)]
         self.assertEqual(len(lines), 2)
         self.assertIn("alpha", lines[0])
         self.assertIn("beta", lines[1])
@@ -67,7 +68,7 @@ class TestBuildRepoLines(unittest.TestCase):
             for index in range(1, 4)
         ]
         result = build_repo_lines(repos)
-        lines = [line for line in result.splitlines() if not line.startswith(" ")]
+        lines = [line for line in result.splitlines() if re.match(r"\d+\. ", line)]
         self.assertTrue(lines[0].startswith("1. ["))
         self.assertTrue(lines[1].startswith("2. ["))
         self.assertTrue(lines[2].startswith("3. ["))
@@ -79,7 +80,7 @@ class TestBuildRepoLines(unittest.TestCase):
             {"full_name": "charles2ke/banana", "name": "banana", "html_url": "https://github.com/charles2ke/banana", "fork": False, "description": "Banana"},
         ]
         result = build_repo_lines(repos)
-        lines = [line for line in result.splitlines() if not line.startswith(" ")]
+        lines = [line for line in result.splitlines() if re.match(r"\d+\. ", line)]
         self.assertIn("Apple", lines[0])
         self.assertIn("banana", lines[1])
         self.assertIn("zebra", lines[2])
