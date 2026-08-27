@@ -49,7 +49,7 @@ gh api repos/charles2ke/charles2ke/dispatches -f event_type=repo-created
 - [Agent-Chaos-Monkey](https://github.com/charles2ke/Agent-Chaos-Monkey) — Deliberately inject connector failures, latency, bad responses, expired auth and malformed data to test whether agents recover safely
 - [basa](https://github.com/charles2ke/basa) — Home, Ghar, Bari - Elder Care Circle Dashboard
 - [design-patterns](https://github.com/charles2ke/design-patterns) — Design Patterns every Engineer should be aware
-- [GraphQL](https://github.com/charles2ke/GraphQL) — Make any microservice have a GraphQL implementation.
+- [GraphQL](https://github.com/charles2ke/GraphQL) — Add a GraphQL implementation to any microservice
 - [Message-Flow](https://github.com/charles2ke/Message-Flow) — Chain of Responsibility pattern
 - [Nakshatra](https://github.com/charles2ke/Nakshatra) — Online Shopping
 - [Night-Sky](https://github.com/charles2ke/Night-Sky) — Generate a realistic, consistent visual reconstruction of the night sky for a user-specified date and location, matching the established panoramic night-sky style.
