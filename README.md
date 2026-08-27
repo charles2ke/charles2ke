@@ -33,7 +33,17 @@ charles2ke/charles2ke
 
 ## 🔗 Other Repositories
 
-This list is checked automatically to keep new repositories visible on my profile.
+This list is rebuilt automatically from the GitHub API, so newly created repositories show up here on their own.
+
+The [`Update repository links`](.github/workflows/update-repo-links.yml) workflow runs:
+
+- **hourly**, so a repository created at any time is picked up shortly afterwards
+- **on demand**, via `workflow_dispatch`
+- **immediately after a repository is created**, via a `repo-created` [`repository_dispatch`](https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event) event:
+
+```bash
+gh api repos/charles2ke/charles2ke/dispatches -f event_type=repo-created
+```
 
 <!-- repo-links:start -->
 - [Agent-Chaos-Monkey](https://github.com/charles2ke/Agent-Chaos-Monkey) — Deliberately inject connector failures, latency, bad responses, expired auth and malformed data to test whether agents recover safely
