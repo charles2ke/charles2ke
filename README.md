@@ -1,7 +1,7 @@
 <h1 align="center">Hi there, I'm Charles 👋</h1>
 
 <p align="center">
-  <em>Software Engineering Leader who loves building reliable, scalable,performant and well-crafted software.</em>
+  <em>Software Engineering Leader who loves building reliable, scalable, performant and well-crafted software.</em>
 </p>
 
 <p align="center">
