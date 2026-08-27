@@ -66,6 +66,8 @@ gh api repos/charles2ke/charles2ke/dispatches -f event_type=repo-created
 
 Feel free to reach out or explore my other repositories. I'm always open to new ideas and collaborations!
 
+- 💼 **LinkedIn:** [linkedin.com/in/charles2ke](https://www.linkedin.com/in/charles2ke)
+
 <!---
 charles2ke/charles2ke is a ✨ special ✨ repository because the `README.md` (this file) appears on your GitHub profile.
 You can click the Preview link to take a look at your changes.
