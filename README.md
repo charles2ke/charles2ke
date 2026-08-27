@@ -1,49 +1,27 @@
-# Hi there, I'm Charles 👋
+<h1 align="center">Hi there, I'm Charles 👋</h1>
 
-## About Me
+<p align="center">
+  <em>Software engineer who loves building reliable, scalable, well-crafted software.</em>
+</p>
 
-- 👀 I'm interested in **Software Engineering** — building reliable, scalable, and well-crafted software
-- 🌱 I'm currently learning something new every day — always growing, always curious
-- 💞️ I'm looking to collaborate on **anything interesting** — open source, side projects, or just a great idea
-- 📫 How to reach me: [Charles2ke@hotmail.com](mailto:Charles2ke@hotmail.com)
+<p align="center">
+  <a href="https://github.com/charles2ke"><img alt="GitHub" src="https://img.shields.io/badge/GitHub-charles2ke-181717?style=for-the-badge&logo=github"></a>
+  <a href="https://www.linkedin.com/in/charles2ke"><img alt="LinkedIn" src="https://img.shields.io/badge/LinkedIn-charles2ke-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white"></a>
+  <a href="mailto:Charles2ke@hotmail.com"><img alt="Email" src="https://img.shields.io/badge/Email-Charles2ke@hotmail.com-EA4335?style=for-the-badge&logo=gmail&logoColor=white"></a>
+</p>
 
 ---
 
-## 🗂️ Repository Overview
+## 🚀 About Me
 
-This is my **GitHub profile repository** (`charles2ke/charles2ke`). The `README.md` in this special repository automatically displays on my GitHub profile page.
+- 👀 Interested in **Software Engineering** — building reliable, scalable, and well-crafted software
+- 🌱 Currently learning something new every day — always growing, always curious
+- 💞️ Looking to collaborate on **anything interesting** — open source, side projects, or just a great idea
+- 📫 Reach me at [Charles2ke@hotmail.com](mailto:Charles2ke@hotmail.com)
 
-### Structure
+---
 
-```
-charles2ke/charles2ke
-├── .github/workflows/update-repo-links.yml   ← Checks repo links
-├── README.md                                 ← Displayed on GitHub profile
-└── scripts/update_repo_links.py              ← Rebuilds the repo list
-```
-
-### About This Repo
-
-| Property | Details |
-|---|---|
-| **Type** | GitHub Profile README |
-| **Purpose** | Personal introduction displayed on GitHub profile |
-| **Technology** | Markdown |
-| **Visibility** | Public |
-
-## 🔗 Other Repositories
-
-This list is rebuilt automatically from the GitHub API, so newly created repositories show up here on their own.
-
-The [`Update repository links`](.github/workflows/update-repo-links.yml) workflow runs:
-
-- **hourly**, so a repository created at any time is picked up shortly afterwards
-- **on demand**, via `workflow_dispatch`
-- **on demand, right after creating a repository**, by manually sending a `repo-created` [`repository_dispatch`](https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event) event:
-
-```bash
-gh api repos/charles2ke/charles2ke/dispatches -f event_type=repo-created
-```
+## 🔗 My Repositories
 
 <!-- repo-links:start -->
 - [Agent-Chaos-Monkey](https://github.com/charles2ke/Agent-Chaos-Monkey) — Deliberately inject connector failures, latency, bad responses, expired auth and malformed data to test whether agents recover safely
@@ -64,9 +42,13 @@ gh api repos/charles2ke/charles2ke/dispatches -f event_type=repo-created
 
 ## 🤝 Let's Connect
 
-Feel free to reach out or explore my other repositories. I'm always open to new ideas and collaborations!
+Always open to new ideas and collaborations — say hi!
 
-- 💼 **LinkedIn:** [linkedin.com/in/charles2ke](https://www.linkedin.com/in/charles2ke)
+<p align="center">
+  <a href="https://www.linkedin.com/in/charles2ke">LinkedIn</a> •
+  <a href="mailto:Charles2ke@hotmail.com">Email</a> •
+  <a href="https://github.com/charles2ke?tab=repositories">Repositories</a>
+</p>
 
 <!---
 charles2ke/charles2ke is a ✨ special ✨ repository because the `README.md` (this file) appears on your GitHub profile.
