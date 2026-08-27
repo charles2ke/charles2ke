@@ -47,16 +47,28 @@ class TestBuildRepoLines(unittest.TestCase):
         result = build_repo_lines([])
         self.assertEqual(result, "- No repositories to show yet.")
 
-    def test_multiple_repos_are_sorted_by_insertion_order(self):
+    def test_multiple_repos_are_sorted_alphabetically(self):
         repos = [
-            {"full_name": "charles2ke/alpha", "name": "alpha", "html_url": "https://github.com/charles2ke/alpha", "fork": False, "description": "Alpha"},
             {"full_name": "charles2ke/beta", "name": "beta", "html_url": "https://github.com/charles2ke/beta", "fork": False, "description": "Beta"},
+            {"full_name": "charles2ke/alpha", "name": "alpha", "html_url": "https://github.com/charles2ke/alpha", "fork": False, "description": "Alpha"},
         ]
         result = build_repo_lines(repos)
         lines = result.splitlines()
         self.assertEqual(len(lines), 2)
         self.assertIn("alpha", lines[0])
         self.assertIn("beta", lines[1])
+
+    def test_sorting_is_case_insensitive(self):
+        repos = [
+            {"full_name": "charles2ke/zebra", "name": "zebra", "html_url": "https://github.com/charles2ke/zebra", "fork": False, "description": "Zebra"},
+            {"full_name": "charles2ke/Apple", "name": "Apple", "html_url": "https://github.com/charles2ke/Apple", "fork": False, "description": "Apple"},
+            {"full_name": "charles2ke/banana", "name": "banana", "html_url": "https://github.com/charles2ke/banana", "fork": False, "description": "Banana"},
+        ]
+        result = build_repo_lines(repos)
+        lines = result.splitlines()
+        self.assertIn("Apple", lines[0])
+        self.assertIn("banana", lines[1])
+        self.assertIn("zebra", lines[2])
 
     def test_whitespace_in_description_is_collapsed(self):
         repos = [{"full_name": "charles2ke/spaced", "name": "spaced", "html_url": "https://github.com/charles2ke/spaced", "fork": False, "description": "  too   many   spaces  "}]
