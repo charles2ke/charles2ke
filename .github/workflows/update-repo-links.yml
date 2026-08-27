@@ -2,6 +2,9 @@ name: Update repository links
 
 on:
   workflow_dispatch:
+  repository_dispatch:
+    types:
+      - repo-created
   push:
     branches:
       - main
@@ -10,7 +13,7 @@ on:
       - scripts/update_repo_links.py
       - .github/workflows/update-repo-links.yml
   schedule:
-    - cron: "0 0 * * 5"
+    - cron: "0 * * * *"
 
 permissions:
   contents: write
