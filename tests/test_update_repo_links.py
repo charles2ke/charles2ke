@@ -45,7 +45,7 @@ class TestBuildRepoLines(unittest.TestCase):
 
     def test_empty_repo_list_returns_placeholder(self):
         result = build_repo_lines([])
-        self.assertEqual(result, "- No repositories to show yet.")
+        self.assertEqual(result, "1. No repositories to show yet.")
 
     def test_multiple_repos_are_sorted_alphabetically(self):
         repos = [
@@ -57,6 +57,17 @@ class TestBuildRepoLines(unittest.TestCase):
         self.assertEqual(len(lines), 2)
         self.assertIn("alpha", lines[0])
         self.assertIn("beta", lines[1])
+
+    def test_entries_are_numbered(self):
+        repos = [
+            {"full_name": f"charles2ke/repo{index}", "name": f"repo{index}", "html_url": f"https://github.com/charles2ke/repo{index}", "fork": False, "description": "Desc"}
+            for index in range(1, 4)
+        ]
+        result = build_repo_lines(repos)
+        lines = result.splitlines()
+        self.assertTrue(lines[0].startswith("1. ["))
+        self.assertTrue(lines[1].startswith("2. ["))
+        self.assertTrue(lines[2].startswith("3. ["))
 
     def test_sorting_is_case_insensitive(self):
         repos = [

@@ -61,14 +61,16 @@ def build_repo_lines(repositories: list[dict[str, object]]) -> str:
         html_url = str(repo.get("html_url", "")).strip()
         description = " ".join(str(repo.get("description") or "No description provided.").split())
 
-        entries.append((name, f"- [{name}]({html_url}) — {description}"))
+        entries.append((name, f"[{name}]({html_url}) — {description}"))
 
-    entries = [line for _, line in sorted(entries, key=lambda entry: entry[0].casefold())]
+    entries.sort(key=lambda entry: entry[0].casefold())
 
     if not entries:
-        entries.append("- No repositories to show yet.")
+        return "1. No repositories to show yet."
 
-    return "\n".join(entries)
+    return "\n".join(
+        f"{position}. {line}" for position, (_, line) in enumerate(entries, start=1)
+    )
 
 
 def update_readme(section_body: str) -> bool:
