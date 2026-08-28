@@ -18,8 +18,9 @@
 #
 # Requires:
 #   - Bash 4 or later.
-#   - GitHub CLI (`gh`) installed and authenticated (`gh auth login`) with a
-#     token that has the `public_repo` scope (or `repo` for private repos).
+#   - For non-dry runs, GitHub CLI (`gh`) installed and authenticated
+#     (`gh auth login`) with a token that has the `public_repo` scope (or
+#     `repo` for private repos).
 #
 # Environment variables:
 #   OWNER   GitHub owner/org whose repos will be updated (default: charles2ke)
