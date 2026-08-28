@@ -17,6 +17,7 @@
 #   scripts/set-topics.sh Nakshatra           # apply to a single repo
 #
 # Requires:
+#   - Bash 4 or later.
 #   - GitHub CLI (`gh`) installed and authenticated (`gh auth login`) with a
 #     token that has the `public_repo` scope (or `repo` for private repos).
 #
@@ -118,10 +119,15 @@ validate_topic() {
 
 apply_topics_for_repo() {
   local repo="$1"
-  local topics="${REPO_TOPICS[$repo]}"
+  local topics="${REPO_TOPICS[$repo]:-}"
   local normalized_topics=()
   local topic
   local normalized
+
+  if [[ -z "$topics" ]]; then
+    echo "FAIL  ${OWNER}/${repo}: no topics configured"
+    return 1
+  fi
 
   for topic in $topics; do
     if ! normalized=$(validate_topic "$topic"); then
