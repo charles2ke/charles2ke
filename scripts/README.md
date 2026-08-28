@@ -10,6 +10,7 @@ requiring a manual visit to each repo's settings page.
 
 ### Prerequisites
 
+- Bash 4 or later.
 - [GitHub CLI (`gh`)](https://cli.github.com/) installed.
 - `gh` authenticated (`gh auth login`) with a token that has at least the
   `public_repo` scope (use `repo` instead if any target repos are private).
