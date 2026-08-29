@@ -50,27 +50,53 @@ jobs:
           base_sha="$(git rev-parse HEAD)"
           file_sha="$(git rev-parse HEAD:README.md)"
 
-          # Point the working branch at the current base commit, creating it if needed.
-          if gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$BRANCH" >/dev/null 2>&1; then
-            gh api --method PATCH "repos/$GITHUB_REPOSITORY/git/refs/heads/$BRANCH" \
-              -f sha="$base_sha" -F force=true >/dev/null
-          else
-            gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
-              -f ref="refs/heads/$BRANCH" -f sha="$base_sha" >/dev/null
+          propose() {
+            # Point the working branch at the current base commit, creating it if needed.
+            if gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$BRANCH" >/dev/null 2>&1; then
+              gh api --method PATCH "repos/$GITHUB_REPOSITORY/git/refs/heads/$BRANCH" \
+                -f sha="$base_sha" -F force=true >/dev/null || return 1
+            else
+              gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
+                -f ref="refs/heads/$BRANCH" -f sha="$base_sha" >/dev/null || return 1
+            fi
+
+            # Commit through the API so the commit carries a verified signature.
+            gh api --method PUT "repos/$GITHUB_REPOSITORY/contents/README.md" \
+              -f message="Update repository links" \
+              -f branch="$BRANCH" \
+              -f sha="$file_sha" \
+              -f content="$(base64 -w0 README.md)" >/dev/null || return 1
+
+            pr_url="$(gh pr list --head "$BRANCH" --base main --state open --json url --jq '.[0].url')" || return 1
+            if [ -z "$pr_url" ]; then
+              pr_url="$(gh pr create --head "$BRANCH" --base main \
+                --title "Update repository links" \
+                --body "Automated refresh of the repository links in README.md.")" || return 1
+            fi
+
+            echo "README repository links were updated in $pr_url." >> "$GITHUB_STEP_SUMMARY"
+          }
+
+          # Repository rules can forbid the Actions token from creating or updating
+          # branches. Report that instead of failing the whole run, so the drift is
+          # still visible and the workflow resumes automatically once the token is
+          # allowed to write.
+          if ! error="$(propose 2>&1)"; then
+            {
+              echo "README repository links are out of date, but they could not be proposed automatically."
+              echo
+              echo "\`\`\`"
+              echo "$error"
+              echo "\`\`\`"
+              echo
+              echo "Allow the \`GITHUB_TOKEN\` (GitHub Actions) to write \`$BRANCH\` in the"
+              echo "[repository rules](https://github.com/$GITHUB_REPOSITORY/rules), then re-run this workflow."
+              echo
+              echo "Pending changes:"
+              echo
+              echo "\`\`\`diff"
+              git diff -- README.md
+              echo "\`\`\`"
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning::Could not propose refreshed README repository links; see the job summary for details."
           fi
-
-          # Commit through the API so the commit carries a verified signature.
-          gh api --method PUT "repos/$GITHUB_REPOSITORY/contents/README.md" \
-            -f message="Update repository links" \
-            -f branch="$BRANCH" \
-            -f sha="$file_sha" \
-            -f content="$(base64 -w0 README.md)" >/dev/null
-
-          pr_url="$(gh pr list --head "$BRANCH" --base main --state open --json url --jq '.[0].url')"
-          if [ -z "$pr_url" ]; then
-            pr_url="$(gh pr create --head "$BRANCH" --base main \
-              --title "Update repository links" \
-              --body "Automated refresh of the repository links in README.md.")"
-          fi
-
-          echo "README repository links were updated in $pr_url." >> "$GITHUB_STEP_SUMMARY"
