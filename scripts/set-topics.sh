@@ -74,7 +74,7 @@ for arg in "$@"; do
       DRY_RUN=1
       ;;
     -h|--help)
-      sed -n '2,25p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     *)
