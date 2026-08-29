@@ -67,7 +67,7 @@ jobs:
               -f sha="$file_sha" \
               -f content="$(base64 -w0 README.md)" >/dev/null || return 1
 
-            pr_url="$(gh pr list --head "$BRANCH" --base main --state open --json url --jq '.[0].url')" || return 1
+            pr_url="$(gh pr list --head "$BRANCH" --base main --state open --json url --jq '.[0].url // ""')" || return 1
             if [ -z "$pr_url" ]; then
               pr_url="$(gh pr create --head "$BRANCH" --base main \
                 --title "Update repository links" \
