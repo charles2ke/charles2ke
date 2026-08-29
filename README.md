@@ -14,7 +14,7 @@
 
 ## 🚀 About Me
 
-- 👀 Interested in **Software Engineering** — building reliable, scalable, and well-crafted software
+- 👀 Interested in **Software Architecture** — building reliable, scalable, and well-crafted software
 - 🌱 Currently learning something new every day — always growing, always curious
 - 💞️ Looking to collaborate on **anything interesting** — open source, side projects, or just a great idea
 - 📫 Reach me at [Charles2ke@hotmail.com](mailto:Charles2ke@hotmail.com)
