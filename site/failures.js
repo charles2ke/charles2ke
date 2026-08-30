@@ -117,9 +117,14 @@ function render() {
     grouped.set(entry.repository.full_name, list);
   }
 
-  // Drop selections for failures that are no longer unresolved.
+  // Drop selections and dismissals for failures that are no longer unresolved.
   const live = new Set(entries.map((entry) => keyFor(entry.repository, entry.failure)));
   selected = new Set([...selected].filter((key) => live.has(key)));
+  const prunedDismissed = new Set([...dismissed].filter((key) => live.has(key)));
+  if (prunedDismissed.size !== dismissed.size) {
+    dismissed = prunedDismissed;
+    persistDismissed();
+  }
 
   elements.repositories.textContent = "";
 
