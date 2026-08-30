@@ -6,6 +6,9 @@ Static page published to GitHub Pages at
 - `failures.html` — markup and templates.
 - `failures.css` — light/dark styling.
 - `failures.js` — data loading, rendering, selection and bulk actions.
+- `screenshots/` — rendered examples of the page, captured with Playwright.
+
+![Failure alerts dashboard](screenshots/dashboard.png)
 
 The page reads `failures.json`, generated at deploy time by
 [`scripts/collect_failures.py`](../scripts/README.md) and published alongside
