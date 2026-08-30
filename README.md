@@ -28,13 +28,13 @@
    <img alt="Field: Disaster Alerts" src="https://img.shields.io/badge/Field-Disaster%20Alerts-0A66C2?style=flat-square"> <img alt="Value: Early warning awareness" src="https://img.shields.io/badge/Value-Early%20warning%20awareness-2EA043?style=flat-square">
 2. [Agent-Chaos-Monkey](https://github.com/charles2ke/Agent-Chaos-Monkey) — Deliberately inject connector failures, latency, bad responses, expired auth and malformed data to test whether agents recover safely 
    <img alt="Field: Reliability Engineering" src="https://img.shields.io/badge/Field-Reliability%20Engineering-0A66C2?style=flat-square"> <img alt="Value: Safer agent failure recovery" src="https://img.shields.io/badge/Value-Safer%20agent%20failure%20recovery-2EA043?style=flat-square">
-3. [baby-model](https://github.com/charles2ke/baby-model) — A model that only knows your data and answer questions about it. 
+3. [baby-model](https://github.com/charles2ke/baby-model) — A model that only knows your data and answers questions about it. 
    <img alt="Field: Private AI" src="https://img.shields.io/badge/Field-Private%20AI-0A66C2?style=flat-square"> <img alt="Value: Grounded personal answers" src="https://img.shields.io/badge/Value-Grounded%20personal%20answers-2EA043?style=flat-square">
 4. [basa](https://github.com/charles2ke/basa) — Home, Ghar, Bari - Elder Care Circle Dashboard 
    <img alt="Field: Elder Care" src="https://img.shields.io/badge/Field-Elder%20Care-0A66C2?style=flat-square"> <img alt="Value: Coordinated caregiving" src="https://img.shields.io/badge/Value-Coordinated%20caregiving-2EA043?style=flat-square">
 5. [design-patterns](https://github.com/charles2ke/design-patterns) — Design Patterns every Engineer should be aware 
    <img alt="Field: Software Design" src="https://img.shields.io/badge/Field-Software%20Design-0A66C2?style=flat-square"> <img alt="Value: Reusable design knowledge" src="https://img.shields.io/badge/Value-Reusable%20design%20knowledge-2EA043?style=flat-square">
-6. [GitDb](https://github.com/charles2ke/GitDb) — Use Github as a database 
+6. [GitDb](https://github.com/charles2ke/GitDb) — Use GitHub as a database 
    <img alt="Field: Software Engineering" src="https://img.shields.io/badge/Field-Software%20Engineering-0A66C2?style=flat-square"> <img alt="Value: Hands-on learning and experimentation" src="https://img.shields.io/badge/Value-Hands--on%20learning%20and%20experimentation-2EA043?style=flat-square">
 7. [GraphQL](https://github.com/charles2ke/GraphQL) — Make any microservice have a GraphQL implementation. 
    <img alt="Field: API Engineering" src="https://img.shields.io/badge/Field-API%20Engineering-0A66C2?style=flat-square"> <img alt="Value: Flexible data access" src="https://img.shields.io/badge/Value-Flexible%20data%20access-2EA043?style=flat-square">
