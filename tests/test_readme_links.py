@@ -12,6 +12,7 @@ tests keep every link honest:
 
 from __future__ import annotations
 
+import ipaddress
 import re
 import socket
 import unittest
@@ -20,6 +21,7 @@ import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from unittest.mock import patch
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PAGES_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "pages.yml"
@@ -98,11 +100,17 @@ def unique_urls() -> list[str]:
 
 
 def _host_is_reachable(host: str) -> bool:
+    if host.lower() == "localhost":
+        return False
+
     try:
-        socket.getaddrinfo(host, 443, proto=socket.IPPROTO_TCP)
+        addresses = socket.getaddrinfo(host, 443, proto=socket.IPPROTO_TCP)
     except OSError:
         return False
-    return True
+
+    return bool(addresses) and all(
+        ipaddress.ip_address(address[4][0]).is_global for address in addresses
+    )
 
 
 def _status_code(url: str) -> int | None:
@@ -247,7 +255,11 @@ class TestLinksAreReachable(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.urls = unique_urls()
-        hosts = {urllib.parse.urlsplit(url).netloc for url in cls.urls}
+        hosts = {
+            host
+            for url in cls.urls
+            if (host := urllib.parse.urlsplit(url).hostname) is not None
+        }
 
         with ThreadPoolExecutor(max_workers=8) as pool:
             reachable = dict(zip(hosts, pool.map(_host_is_reachable, hosts)))
@@ -258,7 +270,9 @@ class TestLinksAreReachable(unittest.TestCase):
 
     def _checkable_urls(self) -> list[str]:
         return [
-            url for url in self.urls if urllib.parse.urlsplit(url).netloc in self.hosts
+            url
+            for url in self.urls
+            if urllib.parse.urlsplit(url).hostname in self.hosts
         ]
 
     def test_links_are_not_dead(self):
@@ -284,6 +298,21 @@ class TestLinksAreReachable(unittest.TestCase):
             BROKEN_STATUSES,
             f"{url} is not published; check the 'Deploy to GitHub Pages' workflow",
         )
+
+
+class TestReachabilitySafety(unittest.TestCase):
+    """Network checks must not probe private CI infrastructure."""
+
+    def test_localhost_is_not_reachable(self):
+        self.assertFalse(_host_is_reachable("localhost"))
+
+    def test_private_addresses_are_not_reachable(self):
+        addresses = [
+            (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("10.0.0.1", 443)),
+            (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("8.8.8.8", 443)),
+        ]
+        with patch("socket.getaddrinfo", return_value=addresses):
+            self.assertFalse(_host_is_reachable("example.com"))
 
 
 if __name__ == "__main__":
