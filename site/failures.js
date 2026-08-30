@@ -335,14 +335,13 @@ function bulkOpen() {
 }
 
 async function bulkCopy() {
-  const links = selectedEntries()
+  const urls = selectedEntries()
     .map((entry) => safeUrl(entry.failure.url))
-    .filter(Boolean)
-    .join("\n");
+    .filter(Boolean);
 
   try {
-    await navigator.clipboard.writeText(links);
-    log(`Copied ${selected.size} link${selected.size === 1 ? "" : "s"} to the clipboard.`);
+    await navigator.clipboard.writeText(urls.join("\n"));
+    log(`Copied ${urls.length} link${urls.length === 1 ? "" : "s"} to the clipboard.`);
   } catch (error) {
     log(`Could not copy links: ${error.message}`, true);
   }
