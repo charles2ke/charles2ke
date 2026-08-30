@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    # Links can break without a commit (a renamed repository, a page that
+    # stops being published), so re-run the checks weekly.
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
 
 permissions:
   contents: read
