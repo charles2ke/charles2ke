@@ -46,6 +46,11 @@ def _request(url: str, token: str | None) -> object:
             return json.load(response)
     except urllib.error.HTTPError as error:
         raise SystemExit(f"GitHub API request failed: {error.code} {error.reason}") from error
+    except (urllib.error.URLError, OSError, TimeoutError) as error:
+        reason = getattr(error, "reason", error)
+        raise SystemExit(f"GitHub API request failed: {reason}") from error
+    except json.JSONDecodeError as error:
+        raise SystemExit("GitHub API request failed: invalid JSON response") from error
 
 
 def fetch_repositories(owner: str, token: str | None) -> list[dict]:
