@@ -1,5 +1,36 @@
 # Scripts
 
+## `collect_failures.py`
+
+Builds the JSON snapshot behind the
+[failure alerts dashboard](https://charles2ke.github.io/charles2ke/failures.html)
+(`site/failures.html`). It walks every public, non-fork, non-archived
+repository owned by `charles2ke`, reads their recent GitHub Actions runs and
+keeps only the **unresolved** failures: the latest run of a workflow on a
+branch, when that run ended in `failure`, `timed_out` or `startup_failure`. A
+newer successful run of the same workflow on the same branch resolves the
+earlier failure, so it drops off the dashboard automatically.
+
+### Usage
+
+```bash
+python scripts/collect_failures.py --output _site/failures.json
+```
+
+Options:
+
+- `--owner` — GitHub account to scan (defaults to `charles2ke`).
+- `--output` — where to write the JSON snapshot (defaults to
+  `_site/failures.json`).
+
+The script reads an optional token from `ALERTS_TOKEN` or `GITHUB_TOKEN`.
+Without a token it uses unauthenticated requests, which are rate limited to 60
+per hour and are usually not enough to scan every repository.
+
+The `Deploy to GitHub Pages` workflow runs this script on every deploy and on a
+schedule, so the published dashboard keeps up with new failures. The page
+itself re-fetches the snapshot once a minute.
+
 ## `set-topics.sh`
 
 Applies a curated set of GitHub topics to every repository owned by
