@@ -8,6 +8,9 @@ on:
   workflow_run:
     workflows: ["Update repository links"]
     types: [completed]
+  schedule:
+    # Refresh the failure alerts dashboard regularly.
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -46,6 +49,19 @@ jobs:
             --output _site/index.html
           # Wrap in GitHub markdown body class for styling
           sed -i 's/<body>/<body class="markdown-body" style="max-width:800px;margin:2rem auto;padding:0 1rem;">/' _site/index.html
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Build failure alerts dashboard
+        env:
+          ALERTS_TOKEN: ${{ secrets.ALERTS_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          cp site/failures.html site/failures.css site/failures.js _site/
+          python scripts/collect_failures.py --output _site/failures.json
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

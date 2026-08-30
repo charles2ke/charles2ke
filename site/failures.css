@@ -1,0 +1,258 @@
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff;
+  --fg: #1f2328;
+  --muted: #59636e;
+  --border: #d1d9e0;
+  --surface: #f6f8fa;
+  --accent: #0969da;
+  --danger: #d1242f;
+  --danger-bg: #ffebe9;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117;
+    --fg: #e6edf3;
+    --muted: #9198a1;
+    --border: #30363d;
+    --surface: #161b22;
+    --accent: #4493f8;
+    --danger: #f85149;
+    --danger-bg: #2d1214;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+  max-width: 60rem;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+    sans-serif;
+  line-height: 1.5;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  max-width: 42rem;
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+#summary {
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.toolbar {
+  margin: 1rem 0 1.5rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface);
+}
+
+.toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.toolbar-row + .toolbar-row {
+  margin-top: 0.6rem;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.check {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  cursor: pointer;
+}
+
+button {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+button.primary:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+button.ghost {
+  background: transparent;
+}
+
+input[type="password"] {
+  flex: 1 1 16rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.token {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.token summary {
+  cursor: pointer;
+}
+
+.log {
+  margin: 0.75rem 0 0;
+  font-size: 0.9rem;
+  white-space: pre-line;
+}
+
+.log.error {
+  color: var(--danger);
+}
+
+.repo {
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.repo-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.6rem 0.85rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.repo-name {
+  font-weight: 600;
+}
+
+.repo-link {
+  margin-left: auto;
+  font-size: 0.85rem;
+}
+
+a {
+  color: var(--accent);
+}
+
+.badge {
+  padding: 0.05rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.badge.conclusion {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.failures {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.failure {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.75rem;
+  align-items: center;
+  padding: 0.55rem 0.85rem;
+}
+
+.failure + .failure {
+  border-top: 1px solid var(--border);
+}
+
+.failure-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.failure-link {
+  margin-left: auto;
+  font-size: 0.85rem;
+}
+
+.empty {
+  padding: 2rem 1rem;
+  border: 1px dashed var(--border);
+  border-radius: 0.5rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+.page-footer {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+}
