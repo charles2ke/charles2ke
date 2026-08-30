@@ -25,7 +25,9 @@ DEFAULT_BADGES = ("Software Engineering", "Hands-on learning and experimentation
 
 # Repository name (case-insensitive) → (field it impacts, value it adds).
 REPO_BADGES: dict[str, tuple[str, str]] = {
+    "5-mins": ("Disaster Alerts", "Early warning awareness"),
     "agent-chaos-monkey": ("Reliability Engineering", "Safer agent failure recovery"),
+    "baby-model": ("Private AI", "Grounded personal answers"),
     "basa": ("Elder Care", "Coordinated caregiving"),
     "design-patterns": ("Software Design", "Reusable design knowledge"),
     "graphql": ("API Engineering", "Flexible data access"),
