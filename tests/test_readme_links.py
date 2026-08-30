@@ -293,8 +293,13 @@ class TestLinksAreReachable(unittest.TestCase):
         if urllib.parse.urlsplit(url).netloc not in self.hosts:
             self.skipTest("GitHub Pages host is not reachable")
 
+        status = _status_code(url)
+        self.assertIsNotNone(
+            status,
+            f"{url} could not be reached; check the 'Deploy to GitHub Pages' workflow",
+        )
         self.assertNotIn(
-            _status_code(url),
+            status,
             BROKEN_STATUSES,
             f"{url} is not published; check the 'Deploy to GitHub Pages' workflow",
         )
