@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - README.md
+      - site/**
+      - scripts/collect_failures.py
+      - .github/workflows/pages.yml
   workflow_run:
     workflows: ["Update repository links"]
     types: [completed]

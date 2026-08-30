@@ -15,6 +15,11 @@ The page reads `failures.json`, generated at deploy time by
 these files. It re-fetches that snapshot every 60 seconds (auto refresh can be
 paused), so resolved failures disappear and new ones appear without a reload.
 
+The `Deploy to GitHub Pages` workflow redeploys whenever anything under `site/`
+changes, and `tests/test_readme_links.py` checks that every link in the
+repository's Markdown — including the dashboard link in the profile README —
+points at a page the workflow actually publishes.
+
 Failures are grouped by repository, with a select-all checkbox per repository
 and a global one. Bulk actions apply to everything selected:
 
