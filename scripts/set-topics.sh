@@ -32,7 +32,9 @@ OWNER="${OWNER:-charles2ke}"
 # Repo -> space-separated list of topics. Keep this list readable and easy to
 # edit; add/remove entries here to change what gets applied.
 declare -A REPO_TOPICS=(
+  ["5-Mins"]="alerts catastrophe disaster safe"
   ["Agent-Chaos-Monkey"]="chaos-engineering ai-agents llm resilience-testing evals dotnet react copilot-studio"
+  ["baby-model"]="ai llm model"
   ["Message-Flow"]="chain-of-responsibility design-patterns dotnet csharp java middleware pipeline"
   ["design-patterns"]="design-patterns typescript software-architecture learning"
   ["tax-break"]="tax-calculator fintech typescript"
@@ -50,7 +52,9 @@ declare -A REPO_TOPICS=(
 # Preserve a stable, readable iteration order regardless of associative-array
 # hashing order.
 REPO_ORDER=(
+  "5-Mins"
   "Agent-Chaos-Monkey"
+  "baby-model"
   "Message-Flow"
   "design-patterns"
   "tax-break"
