@@ -187,6 +187,7 @@ class TestLinkStructure(unittest.TestCase):
         ]
         self.assertEqual([], invalid, "mailto links must contain an email address")
 
+
 class TestGitHubPagesLinks(unittest.TestCase):
     """Links into the Pages site must match what the workflow publishes."""
 
