@@ -21,15 +21,6 @@
 
 ---
 
-## 🚨 Failure Alerts
-
-Unresolved GitHub Actions failures across all of my public repositories are
-surfaced on a single dashboard — grouped by repository, auto-refreshed every
-minute, and with bulk actions (re-run, cancel, open, copy, dismiss):
-**[Failure alerts dashboard](https://charles2ke.github.io/charles2ke/failures.html)**
-
----
-
 ## 🔗 My Repositories
 
 <!-- repo-links:start -->
