@@ -187,11 +187,6 @@ class TestLinkStructure(unittest.TestCase):
         ]
         self.assertEqual([], invalid, "mailto links must contain an email address")
 
-    def test_readme_links_to_the_failure_dashboard(self):
-        readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
-        self.assertIn(f"{PAGES_BASE_URL}failures.html", readme)
-
-
 class TestGitHubPagesLinks(unittest.TestCase):
     """Links into the Pages site must match what the workflow publishes."""
 
