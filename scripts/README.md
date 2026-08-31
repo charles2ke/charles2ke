@@ -1,5 +1,58 @@
 # Scripts
 
+## `agent_session_mcp.py`
+
+A [Model Context Protocol](https://modelcontextprotocol.io) server that lets an
+MCP client start a GitHub coding agent session (an *agent task*) on any
+repository you have access to. It speaks MCP over stdio using
+newline-delimited JSON-RPC and calls the GitHub
+[agent tasks REST API](https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/use-cloud-agent-via-the-api),
+so it needs no third-party dependencies — just Python 3.
+
+### Tools
+
+- `create_agent_session` — start a session. Requires `repository`
+  (`owner/repo`) and `prompt`; optionally takes `base_ref`, `model` and
+  `create_pull_request`.
+- `get_agent_session` — read the state of a session (`repository`,
+  `session_id`). States include `queued`, `in_progress`, `completed`,
+  `failed`, `idle`, `waiting_for_user`, `timed_out` and `cancelled`.
+- `list_agent_sessions` — list sessions for a `repository`, or across every
+  repository the token can reach when `repository` is omitted.
+
+### Authentication
+
+The server reads a token from `GITHUB_AGENT_TOKEN`, `GITHUB_TOKEN` or
+`GH_TOKEN`, in that order. The agent tasks API only accepts user-to-server
+tokens (a personal access token, an OAuth app token or a GitHub App
+user-to-server token) — GitHub App installation tokens are not supported.
+
+### Usage
+
+Register it with an MCP client, for example in `.vscode/mcp.json` or another
+client's server list:
+
+```json
+{
+  "mcpServers": {
+    "github-agent-sessions": {
+      "command": "python",
+      "args": ["scripts/agent_session_mcp.py"],
+      "env": { "GITHUB_TOKEN": "${input:github_token}" }
+    }
+  }
+}
+```
+
+You can also drive it by hand for a quick smoke test:
+
+```bash
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' \
+  | python scripts/agent_session_mcp.py
+```
+
+Note that the agent tasks API is in public preview and may change.
+
 ## `collect_failures.py`
 
 Builds the JSON snapshot behind the
