@@ -222,7 +222,7 @@ def get_agent_session(arguments: dict[str, Any], token: str) -> Any:
     session_id = arguments.get("session_id")
     if not isinstance(session_id, str):
         raise ToolError("'session_id' is required and must be a string.")
-    session_id = str(session_id).strip()
+    session_id = session_id.strip()
     if not session_id:
         raise ToolError("'session_id' is required and must be a string.")
 
