@@ -271,10 +271,13 @@ def handle_request(message: dict[str, Any]) -> dict[str, Any] | None:
     message_id = message.get("id")
     is_notification = "id" not in message
 
-    if not isinstance(method, str):
+    def error_or_no_response(code: int, error_message: str) -> dict[str, Any] | None:
         if is_notification:
             return None
-        return error_response(message_id, INVALID_REQUEST, "Missing method.")
+        return error_response(message_id, code, error_message)
+
+    if not isinstance(method, str):
+        return error_or_no_response(INVALID_REQUEST, "Missing method.")
 
     if method == "initialize":
         result: Any = {
@@ -289,29 +292,19 @@ def handle_request(message: dict[str, Any]) -> dict[str, Any] | None:
     elif method == "tools/call":
         params = message.get("params")
         if not isinstance(params, dict):
-            if is_notification:
-                return None
-            return error_response(message_id, INVALID_PARAMS, "Missing params.")
+            return error_or_no_response(INVALID_PARAMS, "Missing params.")
         name = params.get("name")
         if not isinstance(name, str):
-            if is_notification:
-                return None
-            return error_response(message_id, INVALID_PARAMS, "Missing tool name.")
+            return error_or_no_response(INVALID_PARAMS, "Missing tool name.")
         arguments = params.get("arguments") or {}
         if not isinstance(arguments, dict):
-            if is_notification:
-                return None
-            return error_response(message_id, INVALID_PARAMS, "'arguments' must be an object.")
+            return error_or_no_response(INVALID_PARAMS, "'arguments' must be an object.")
         try:
             result = call_tool(name, arguments)
         except ToolError as error:
-            if is_notification:
-                return None
-            return error_response(message_id, INVALID_PARAMS, str(error))
+            return error_or_no_response(INVALID_PARAMS, str(error))
         except Exception as error:  # noqa: BLE001 - never kill the server loop
-            if is_notification:
-                return None
-            return error_response(message_id, INTERNAL_ERROR, f"Tool failed: {error}")
+            return error_or_no_response(INTERNAL_ERROR, f"Tool failed: {error}")
     elif is_notification:
         # Notifications we don't handle (e.g. notifications/initialized).
         return None
