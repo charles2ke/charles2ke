@@ -289,18 +289,28 @@ def handle_request(message: dict[str, Any]) -> dict[str, Any] | None:
     elif method == "tools/call":
         params = message.get("params")
         if not isinstance(params, dict):
+            if is_notification:
+                return None
             return error_response(message_id, INVALID_PARAMS, "Missing params.")
         name = params.get("name")
         if not isinstance(name, str):
+            if is_notification:
+                return None
             return error_response(message_id, INVALID_PARAMS, "Missing tool name.")
         arguments = params.get("arguments") or {}
         if not isinstance(arguments, dict):
+            if is_notification:
+                return None
             return error_response(message_id, INVALID_PARAMS, "'arguments' must be an object.")
         try:
             result = call_tool(name, arguments)
         except ToolError as error:
+            if is_notification:
+                return None
             return error_response(message_id, INVALID_PARAMS, str(error))
         except Exception as error:  # noqa: BLE001 - never kill the server loop
+            if is_notification:
+                return None
             return error_response(message_id, INTERNAL_ERROR, f"Tool failed: {error}")
     elif is_notification:
         # Notifications we don't handle (e.g. notifications/initialized).

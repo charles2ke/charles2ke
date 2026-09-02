@@ -223,6 +223,19 @@ class ProtocolTests(unittest.TestCase):
         response = handle_request({"jsonrpc": "2.0", "id": 4, "method": "tools/call"})
         self.assertIn("error", response)
 
+    def test_malformed_tools_call_notifications_get_no_response(self):
+        for params in [
+            None,
+            {},
+            {"name": "create_agent_session", "arguments": []},
+            {"name": "unknown", "arguments": {}},
+        ]:
+            message = {"jsonrpc": "2.0", "method": "tools/call"}
+            if params is not None:
+                message["params"] = params
+            with self.subTest(params=params):
+                self.assertIsNone(handle_request(message))
+
     def test_tools_call_dispatches(self):
         fake = FakeRequest({"id": "task_9"})
         with (
