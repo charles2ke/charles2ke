@@ -153,6 +153,8 @@ class ReadAgentSessionTests(unittest.TestCase):
     def test_get_requires_session_id(self):
         with self.assertRaises(ToolError):
             get_agent_session({"repository": "owner/repo"}, "token")
+        with self.assertRaises(ToolError):
+            get_agent_session({"repository": "owner/repo", "session_id": 1}, "token")
 
     def test_list_for_repository(self):
         fake = FakeRequest([])
