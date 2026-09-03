@@ -32,33 +32,27 @@
    <img alt="Field: Private AI" src="https://img.shields.io/badge/Field-Private%20AI-0A66C2?style=flat-square"> <img alt="Value: Grounded personal answers" src="https://img.shields.io/badge/Value-Grounded%20personal%20answers-2EA043?style=flat-square">
 4. [basa](https://github.com/charles2ke/basa) — Home, Ghar, Bari - Elder Care Circle Dashboard 
    <img alt="Field: Elder Care" src="https://img.shields.io/badge/Field-Elder%20Care-0A66C2?style=flat-square"> <img alt="Value: Coordinated caregiving" src="https://img.shields.io/badge/Value-Coordinated%20caregiving-2EA043?style=flat-square">
-5. [crabs](https://github.com/charles2ke/crabs) — Secure Open Claw for everyone 
-   <img alt="Field: Security" src="https://img.shields.io/badge/Field-Security-0A66C2?style=flat-square"> <img alt="Value: Safer open access for everyone" src="https://img.shields.io/badge/Value-Safer%20open%20access%20for%20everyone-2EA043?style=flat-square">
-6. [design-patterns](https://github.com/charles2ke/design-patterns) — Design Patterns every Engineer should be aware 
+5. [design-patterns](https://github.com/charles2ke/design-patterns) — Design Patterns every Engineer should be aware 
    <img alt="Field: Software Design" src="https://img.shields.io/badge/Field-Software%20Design-0A66C2?style=flat-square"> <img alt="Value: Reusable design knowledge" src="https://img.shields.io/badge/Value-Reusable%20design%20knowledge-2EA043?style=flat-square">
-7. [GitDb](https://github.com/charles2ke/GitDb) — Use GitHub as a database 
+6. [GitDb](https://github.com/charles2ke/GitDb) — Use GitHub as a database 
    <img alt="Field: Software Engineering" src="https://img.shields.io/badge/Field-Software%20Engineering-0A66C2?style=flat-square"> <img alt="Value: Hands-on learning and experimentation" src="https://img.shields.io/badge/Value-Hands--on%20learning%20and%20experimentation-2EA043?style=flat-square">
-8. [GraphQL](https://github.com/charles2ke/GraphQL) — Make any microservice have a GraphQL implementation. 
+7. [GraphQL](https://github.com/charles2ke/GraphQL) — Make any microservice have a GraphQL implementation. 
    <img alt="Field: API Engineering" src="https://img.shields.io/badge/Field-API%20Engineering-0A66C2?style=flat-square"> <img alt="Value: Flexible data access" src="https://img.shields.io/badge/Value-Flexible%20data%20access-2EA043?style=flat-square">
-9. [Message-Flow](https://github.com/charles2ke/Message-Flow) — A small, dependency-free Chain of Responsibility library. 
+8. [Message-Flow](https://github.com/charles2ke/Message-Flow) — A small, dependency-free Chain of Responsibility library. 
    <img alt="Field: Software Design" src="https://img.shields.io/badge/Field-Software%20Design-0A66C2?style=flat-square"> <img alt="Value: Decoupled message handling" src="https://img.shields.io/badge/Value-Decoupled%20message%20handling-2EA043?style=flat-square">
-10. [Nakshatra](https://github.com/charles2ke/Nakshatra) — Online Shopping Portal 
-    <img alt="Field: E-Commerce" src="https://img.shields.io/badge/Field-E--Commerce-0A66C2?style=flat-square"> <img alt="Value: Streamlined online shopping" src="https://img.shields.io/badge/Value-Streamlined%20online%20shopping-2EA043?style=flat-square">
-11. [Night-Sky](https://github.com/charles2ke/Night-Sky) — Generate a realistic, consistent visual reconstruction of the night sky for a user-specified date and location, matching the established panoramic night-sky style. 
+9. [Nakshatra](https://github.com/charles2ke/Nakshatra) — Online Shopping Portal 
+   <img alt="Field: E-Commerce" src="https://img.shields.io/badge/Field-E--Commerce-0A66C2?style=flat-square"> <img alt="Value: Streamlined online shopping" src="https://img.shields.io/badge/Value-Streamlined%20online%20shopping-2EA043?style=flat-square">
+10. [Night-Sky](https://github.com/charles2ke/Night-Sky) — Generate a realistic, consistent visual reconstruction of the night sky for a user-specified date and location, matching the established panoramic night-sky style. 
     <img alt="Field: Astronomy Visualisation" src="https://img.shields.io/badge/Field-Astronomy%20Visualisation-0A66C2?style=flat-square"> <img alt="Value: Accurate sky reconstruction" src="https://img.shields.io/badge/Value-Accurate%20sky%20reconstruction-2EA043?style=flat-square">
-12. [OpenTrading](https://github.com/charles2ke/OpenTrading) — Trading Platform to buy and sell stocks on different exchanges around the world 
+11. [OpenTrading](https://github.com/charles2ke/OpenTrading) — Trading Platform to buy and sell stocks on different exchanges around the world 
     <img alt="Field: FinTech" src="https://img.shields.io/badge/Field-FinTech-0A66C2?style=flat-square"> <img alt="Value: Global trade execution" src="https://img.shields.io/badge/Value-Global%20trade%20execution-2EA043?style=flat-square">
-13. [Portfolio-Watcher](https://github.com/charles2ke/Portfolio-Watcher) — Take care of all your Financial Portfolio in one place 
+12. [Portfolio-Watcher](https://github.com/charles2ke/Portfolio-Watcher) — Take care of all your Financial Portfolio in one place 
     <img alt="Field: Personal Finance" src="https://img.shields.io/badge/Field-Personal%20Finance-0A66C2?style=flat-square"> <img alt="Value: Unified portfolio view" src="https://img.shields.io/badge/Value-Unified%20portfolio%20view-2EA043?style=flat-square">
-14. [social](https://github.com/charles2ke/social) — Social Media Manager 
-    <img alt="Field: Social Media" src="https://img.shields.io/badge/Field-Social%20Media-0A66C2?style=flat-square"> <img alt="Value: Simpler content management" src="https://img.shields.io/badge/Value-Simpler%20content%20management-2EA043?style=flat-square">
-15. [tax-break](https://github.com/charles2ke/tax-break) — An online individual income tax estimation portal. 
+13. [tax-break](https://github.com/charles2ke/tax-break) — An online individual income tax estimation portal. 
     <img alt="Field: Taxation" src="https://img.shields.io/badge/Field-Taxation-0A66C2?style=flat-square"> <img alt="Value: Simplified tax filing" src="https://img.shields.io/badge/Value-Simplified%20tax%20filing-2EA043?style=flat-square">
-16. [TitoOS](https://github.com/charles2ke/TitoOS) — Operating System for Agents 
-    <img alt="Field: Agent Platforms" src="https://img.shields.io/badge/Field-Agent%20Platforms-0A66C2?style=flat-square"> <img alt="Value: Purpose-built agent runtime" src="https://img.shields.io/badge/Value-Purpose--built%20agent%20runtime-2EA043?style=flat-square">
-17. [travel](https://github.com/charles2ke/travel) — Explore.. Dream.. Discover.. 
+14. [travel](https://github.com/charles2ke/travel) — Explore.. Dream.. Discover.. 
     <img alt="Field: Travel" src="https://img.shields.io/badge/Field-Travel-0A66C2?style=flat-square"> <img alt="Value: Easier trip discovery" src="https://img.shields.io/badge/Value-Easier%20trip%20discovery-2EA043?style=flat-square">
-18. [workout](https://github.com/charles2ke/workout) — My weekly workout plan 
+15. [workout](https://github.com/charles2ke/workout) — My weekly workout plan 
     <img alt="Field: Health and Fitness" src="https://img.shields.io/badge/Field-Health%20and%20Fitness-0A66C2?style=flat-square"> <img alt="Value: Consistent training habits" src="https://img.shields.io/badge/Value-Consistent%20training%20habits-2EA043?style=flat-square">
 <!-- repo-links:end -->
 

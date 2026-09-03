@@ -29,7 +29,6 @@ REPO_BADGES: dict[str, tuple[str, str]] = {
     "agent-chaos-monkey": ("Reliability Engineering", "Safer agent failure recovery"),
     "baby-model": ("Private AI", "Grounded personal answers"),
     "basa": ("Elder Care", "Coordinated caregiving"),
-    "crabs": ("Security", "Safer open access for everyone"),
     "design-patterns": ("Software Design", "Reusable design knowledge"),
     "graphql": ("API Engineering", "Flexible data access"),
     "message-flow": ("Software Design", "Decoupled message handling"),
@@ -37,9 +36,7 @@ REPO_BADGES: dict[str, tuple[str, str]] = {
     "night-sky": ("Astronomy Visualisation", "Accurate sky reconstruction"),
     "opentrading": ("FinTech", "Global trade execution"),
     "portfolio-watcher": ("Personal Finance", "Unified portfolio view"),
-    "social": ("Social Media", "Simpler content management"),
     "tax-break": ("Taxation", "Simplified tax filing"),
-    "titoos": ("Agent Platforms", "Purpose-built agent runtime"),
     "travel": ("Travel", "Easier trip discovery"),
     "workout": ("Health and Fitness", "Consistent training habits"),
 }
