@@ -64,8 +64,7 @@ Always open to new ideas and collaborations — say hi!
 
 <p align="center">
   <a href="https://www.linkedin.com/in/charles2ke">LinkedIn</a> •
-  <a href="mailto:Charles2ke@hotmail.com">Email</a> •
-  <a href="https://github.com/charles2ke?tab=repositories">Repositories</a>
+  <a href="mailto:Charles2ke@hotmail.com">Email</a>
 </p>
 
 <!---
