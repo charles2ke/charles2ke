@@ -202,18 +202,21 @@ class TestFetchRepositories(unittest.TestCase):
 
 
 class TestRequestRetries(unittest.TestCase):
+    class _Response:
+        def __init__(self, body: bytes):
+            self._body = body
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self):
+            return self._body
+
     def _urlopen_result(self, payload: dict):
-        class _Response:
-            def __enter__(self_inner):
-                return self_inner
-
-            def __exit__(self_inner, *args):
-                return False
-
-            def read(self_inner):
-                return json.dumps(payload).encode("utf-8")
-
-        return _Response()
+        return self._Response(json.dumps(payload).encode("utf-8"))
 
     def _http_error(self, code: int):
         return urllib.error.HTTPError(
@@ -223,6 +226,9 @@ class TestRequestRetries(unittest.TestCase):
             hdrs=None,
             fp=None,
         )
+
+    def _invalid_json_result(self):
+        return self._Response(b"not json")
 
     def test_retries_transient_server_error(self):
         from scripts.collect_failures import _request
@@ -241,6 +247,79 @@ class TestRequestRetries(unittest.TestCase):
             patch(
                 "scripts.collect_failures.urllib.request.urlopen",
                 side_effect=[self._http_error(503) for _ in range(MAX_ATTEMPTS)],
+            ) as mock_urlopen,
+            patch("scripts.collect_failures.time.sleep") as mock_sleep,
+            self.assertRaises(SystemExit),
+        ):
+            _request("https://api.github.com/x", None)
+
+        self.assertEqual(MAX_ATTEMPTS, mock_urlopen.call_count)
+        self.assertEqual(
+            [2.0, 4.0, 6.0],
+            [sleep_call.args[0] for sleep_call in mock_sleep.call_args_list],
+        )
+
+    def test_retries_network_error(self):
+        from scripts.collect_failures import _request
+
+        responses = [
+            urllib.error.URLError("connection reset"),
+            self._urlopen_result({"ok": True}),
+        ]
+        with (
+            patch(
+                "scripts.collect_failures.urllib.request.urlopen", side_effect=responses
+            ) as mock_urlopen,
+            patch("scripts.collect_failures.time.sleep") as mock_sleep,
+        ):
+            self.assertEqual({"ok": True}, _request("https://api.github.com/x", None))
+
+        self.assertEqual(2, mock_urlopen.call_count)
+        mock_sleep.assert_called_once_with(2.0)
+
+    def test_gives_up_after_max_attempts_on_network_error(self):
+        from scripts.collect_failures import MAX_ATTEMPTS, _request
+
+        with (
+            patch(
+                "scripts.collect_failures.urllib.request.urlopen",
+                side_effect=[
+                    urllib.error.URLError("connection reset") for _ in range(MAX_ATTEMPTS)
+                ],
+            ) as mock_urlopen,
+            patch("scripts.collect_failures.time.sleep") as mock_sleep,
+            self.assertRaises(SystemExit),
+        ):
+            _request("https://api.github.com/x", None)
+
+        self.assertEqual(MAX_ATTEMPTS, mock_urlopen.call_count)
+        self.assertEqual(
+            [2.0, 4.0, 6.0],
+            [sleep_call.args[0] for sleep_call in mock_sleep.call_args_list],
+        )
+
+    def test_retries_malformed_json_response(self):
+        from scripts.collect_failures import _request
+
+        responses = [self._invalid_json_result(), self._urlopen_result({"ok": True})]
+        with (
+            patch(
+                "scripts.collect_failures.urllib.request.urlopen", side_effect=responses
+            ) as mock_urlopen,
+            patch("scripts.collect_failures.time.sleep") as mock_sleep,
+        ):
+            self.assertEqual({"ok": True}, _request("https://api.github.com/x", None))
+
+        self.assertEqual(2, mock_urlopen.call_count)
+        mock_sleep.assert_called_once_with(2.0)
+
+    def test_gives_up_after_max_attempts_on_malformed_json(self):
+        from scripts.collect_failures import MAX_ATTEMPTS, _request
+
+        with (
+            patch(
+                "scripts.collect_failures.urllib.request.urlopen",
+                side_effect=[self._invalid_json_result() for _ in range(MAX_ATTEMPTS)],
             ) as mock_urlopen,
             patch("scripts.collect_failures.time.sleep") as mock_sleep,
             self.assertRaises(SystemExit),
