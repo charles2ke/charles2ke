@@ -7,6 +7,7 @@ import json
 import sys
 import tempfile
 import unittest
+import urllib.error
 from pathlib import Path
 from typing import ClassVar
 from unittest.mock import patch
@@ -198,6 +199,68 @@ class TestFetchRepositories(unittest.TestCase):
             repositories = fetch_repositories("o", None)
 
         self.assertEqual(["public"], [repo["name"] for repo in repositories])
+
+
+class TestRequestRetries(unittest.TestCase):
+    def _urlopen_result(self, payload: dict):
+        class _Response:
+            def __enter__(self_inner):
+                return self_inner
+
+            def __exit__(self_inner, *args):
+                return False
+
+            def read(self_inner):
+                return json.dumps(payload).encode("utf-8")
+
+        return _Response()
+
+    def _http_error(self, code: int):
+        return urllib.error.HTTPError(
+            url="https://api.github.com/x",
+            code=code,
+            msg="Bad Gateway",
+            hdrs=None,
+            fp=None,
+        )
+
+    def test_retries_transient_server_error(self):
+        from scripts.collect_failures import _request
+
+        responses = [self._http_error(502), self._urlopen_result({"ok": True})]
+        with (
+            patch("scripts.collect_failures.urllib.request.urlopen", side_effect=responses),
+            patch("scripts.collect_failures.time.sleep"),
+        ):
+            self.assertEqual({"ok": True}, _request("https://api.github.com/x", None))
+
+    def test_gives_up_after_max_attempts(self):
+        from scripts.collect_failures import MAX_ATTEMPTS, _request
+
+        with (
+            patch(
+                "scripts.collect_failures.urllib.request.urlopen",
+                side_effect=[self._http_error(503) for _ in range(MAX_ATTEMPTS)],
+            ),
+            patch("scripts.collect_failures.time.sleep"),
+            self.assertRaises(SystemExit),
+        ):
+            _request("https://api.github.com/x", None)
+
+    def test_does_not_retry_client_error(self):
+        from scripts.collect_failures import _request
+
+        urlopen = patch(
+            "scripts.collect_failures.urllib.request.urlopen",
+            side_effect=self._http_error(404),
+        )
+        with (
+            urlopen as mock_urlopen,
+            patch("scripts.collect_failures.time.sleep"),
+            self.assertRaises(SystemExit),
+        ):
+            _request("https://api.github.com/x", None)
+        self.assertEqual(1, mock_urlopen.call_count)
 
 
 if __name__ == "__main__":

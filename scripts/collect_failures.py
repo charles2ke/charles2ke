@@ -16,6 +16,7 @@ import datetime as dt
 import json
 import os
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -29,6 +30,9 @@ FAILED_CONCLUSIONS = frozenset({"failure", "timed_out", "startup_failure"})
 RUN_PAGES = 2
 RUNS_PER_PAGE = 100
 USER_AGENT = "charles2ke-failures-dashboard"
+RETRY_STATUSES = frozenset({429, 500, 502, 503, 504})
+MAX_ATTEMPTS = 4
+RETRY_BACKOFF_SECONDS = 2.0
 
 
 def _request(url: str, token: str | None) -> object:
@@ -41,16 +45,28 @@ def _request(url: str, token: str | None) -> object:
         headers["Authorization"] = "Bearer " + token
 
     request = urllib.request.Request(url, headers=headers)
-    try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            return json.load(response)
-    except urllib.error.HTTPError as error:
-        raise SystemExit(f"GitHub API request failed: {error.code} {error.reason}") from error
-    except (urllib.error.URLError, OSError, TimeoutError) as error:
-        reason = getattr(error, "reason", error)
-        raise SystemExit(f"GitHub API request failed: {reason}") from error
-    except json.JSONDecodeError as error:
-        raise SystemExit("GitHub API request failed: invalid JSON response") from error
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                return json.load(response)
+        except urllib.error.HTTPError as error:
+            message = f"GitHub API request failed: {error.code} {error.reason}"
+            retryable = error.code in RETRY_STATUSES
+        except (urllib.error.URLError, OSError, TimeoutError) as error:
+            reason = getattr(error, "reason", error)
+            message = f"GitHub API request failed: {reason}"
+            retryable = True
+        except json.JSONDecodeError:
+            message = "GitHub API request failed: invalid JSON response"
+            retryable = True
+
+        if not retryable or attempt == MAX_ATTEMPTS:
+            raise SystemExit(message)
+
+        print(f"{message} (attempt {attempt}/{MAX_ATTEMPTS}), retrying...", file=sys.stderr)
+        time.sleep(RETRY_BACKOFF_SECONDS * attempt)
+
+    raise SystemExit("GitHub API request failed: retries exhausted")
 
 
 def fetch_repositories(owner: str, token: str | None) -> list[dict]:
