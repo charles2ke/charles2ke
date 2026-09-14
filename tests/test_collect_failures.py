@@ -241,11 +241,17 @@ class TestRequestRetries(unittest.TestCase):
             patch(
                 "scripts.collect_failures.urllib.request.urlopen",
                 side_effect=[self._http_error(503) for _ in range(MAX_ATTEMPTS)],
-            ),
-            patch("scripts.collect_failures.time.sleep"),
+            ) as mock_urlopen,
+            patch("scripts.collect_failures.time.sleep") as mock_sleep,
             self.assertRaises(SystemExit),
         ):
             _request("https://api.github.com/x", None)
+
+        self.assertEqual(MAX_ATTEMPTS, mock_urlopen.call_count)
+        self.assertEqual(
+            [2.0, 4.0, 6.0],
+            [call.args[0] for call in mock_sleep.call_args_list],
+        )
 
     def test_does_not_retry_client_error(self):
         from scripts.collect_failures import _request
