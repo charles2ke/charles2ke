@@ -56,7 +56,7 @@ def _request(url: str, token: str | None) -> object:
             reason = getattr(error, "reason", error)
             message = f"GitHub API request failed: {reason}"
             retryable = True
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, UnicodeDecodeError):
             message = "GitHub API request failed: invalid JSON response"
             retryable = True
 
