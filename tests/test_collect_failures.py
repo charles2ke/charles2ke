@@ -250,7 +250,7 @@ class TestRequestRetries(unittest.TestCase):
         self.assertEqual(MAX_ATTEMPTS, mock_urlopen.call_count)
         self.assertEqual(
             [2.0, 4.0, 6.0],
-            [call.args[0] for call in mock_sleep.call_args_list],
+            [sleep_call.args[0] for sleep_call in mock_sleep.call_args_list],
         )
 
     def test_does_not_retry_client_error(self):
