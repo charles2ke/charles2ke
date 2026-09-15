@@ -16,6 +16,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts.collect_failures import (
+    GitHubAPIError,
     build_snapshot,
     main,
     summarise_failure,
@@ -249,13 +250,13 @@ class TestRequestRetries(unittest.TestCase):
                 side_effect=[self._http_error(503) for _ in range(MAX_ATTEMPTS)],
             ) as mock_urlopen,
             patch("scripts.collect_failures.time.sleep") as mock_sleep,
-            self.assertRaises(SystemExit),
+            self.assertRaises(GitHubAPIError),
         ):
             _request("https://api.github.com/x", None)
 
         self.assertEqual(MAX_ATTEMPTS, mock_urlopen.call_count)
         self.assertEqual(
-            [2.0, 4.0, 6.0],
+            [2.0, 4.0, 8.0, 16.0],
             [sleep_call.args[0] for sleep_call in mock_sleep.call_args_list],
         )
 
@@ -288,13 +289,13 @@ class TestRequestRetries(unittest.TestCase):
                 ],
             ) as mock_urlopen,
             patch("scripts.collect_failures.time.sleep") as mock_sleep,
-            self.assertRaises(SystemExit),
+            self.assertRaises(GitHubAPIError),
         ):
             _request("https://api.github.com/x", None)
 
         self.assertEqual(MAX_ATTEMPTS, mock_urlopen.call_count)
         self.assertEqual(
-            [2.0, 4.0, 6.0],
+            [2.0, 4.0, 8.0, 16.0],
             [sleep_call.args[0] for sleep_call in mock_sleep.call_args_list],
         )
 
@@ -322,13 +323,13 @@ class TestRequestRetries(unittest.TestCase):
                 side_effect=[self._invalid_json_result() for _ in range(MAX_ATTEMPTS)],
             ) as mock_urlopen,
             patch("scripts.collect_failures.time.sleep") as mock_sleep,
-            self.assertRaises(SystemExit),
+            self.assertRaises(GitHubAPIError),
         ):
             _request("https://api.github.com/x", None)
 
         self.assertEqual(MAX_ATTEMPTS, mock_urlopen.call_count)
         self.assertEqual(
-            [2.0, 4.0, 6.0],
+            [2.0, 4.0, 8.0, 16.0],
             [sleep_call.args[0] for sleep_call in mock_sleep.call_args_list],
         )
 
@@ -342,10 +343,48 @@ class TestRequestRetries(unittest.TestCase):
         with (
             urlopen as mock_urlopen,
             patch("scripts.collect_failures.time.sleep"),
-            self.assertRaises(SystemExit),
+            self.assertRaises(GitHubAPIError),
         ):
             _request("https://api.github.com/x", None)
         self.assertEqual(1, mock_urlopen.call_count)
+
+
+class TestTransientApiFailures(unittest.TestCase):
+    def test_repository_error_is_skipped_and_reported(self):
+        repositories = [
+            {"name": "demo", "full_name": "charles2ke/demo"},
+            {"name": "broken", "full_name": "charles2ke/broken"},
+        ]
+
+        def fetch_runs(full_name, token):
+            if full_name == "charles2ke/broken":
+                raise GitHubAPIError("GitHub API request failed: 502 Bad Gateway")
+            return [run(1)]
+
+        with (
+            patch("scripts.collect_failures.fetch_repositories", return_value=repositories),
+            patch("scripts.collect_failures.fetch_runs", side_effect=fetch_runs),
+        ):
+            snapshot = build_snapshot("charles2ke", None)
+
+        self.assertEqual(["charles2ke/demo"], [r["full_name"] for r in snapshot["repositories"]])
+        self.assertTrue(snapshot["degraded"])
+        self.assertEqual(1, len(snapshot["errors"]))
+        self.assertIn("charles2ke/broken", snapshot["errors"][0])
+
+    def test_main_writes_degraded_snapshot_instead_of_failing(self):
+        error = GitHubAPIError("GitHub API request failed: 502 Bad Gateway")
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "failures.json"
+            with patch("scripts.collect_failures.build_snapshot", side_effect=error):
+                self.assertEqual(0, main(["--output", str(output)]))
+
+            payload = json.loads(output.read_text(encoding="utf-8"))
+
+        self.assertTrue(payload["degraded"])
+        self.assertEqual([], payload["repositories"])
+        self.assertEqual(0, payload["failure_count"])
+        self.assertIn("502 Bad Gateway", payload["errors"][0])
 
 
 if __name__ == "__main__":

@@ -30,11 +30,12 @@ const elements = {
   failureTemplate: document.getElementById("failure-template"),
 };
 
-let snapshot = { repositories: [], generated_at: "" };
+let snapshot = { repositories: [], generated_at: "", errors: [] };
 let selected = new Set();
 let dismissed = readDismissed();
 let refreshTimer = null;
 let busy = false;
+let snapshotWarning = "";
 
 function readDismissed() {
   try {
@@ -280,8 +281,18 @@ async function load() {
     snapshot = {
       generated_at: payload.generated_at || "",
       repositories: Array.isArray(payload.repositories) ? payload.repositories : [],
+      errors: Array.isArray(payload.errors) ? payload.errors.map(String) : [],
     };
     render();
+    if (snapshot.errors.length) {
+      snapshotWarning = `Snapshot is incomplete:\n${snapshot.errors.join("\n")}`;
+      log(snapshotWarning, true);
+    } else if (snapshotWarning) {
+      if (elements.log.textContent === snapshotWarning) {
+        log("");
+      }
+      snapshotWarning = "";
+    }
   } catch (error) {
     elements.summary.textContent = "Could not load the failure snapshot";
     elements.refreshStatus.textContent = "";
