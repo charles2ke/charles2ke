@@ -31,8 +31,12 @@ RUN_PAGES = 2
 RUNS_PER_PAGE = 100
 USER_AGENT = "charles2ke-failures-dashboard"
 RETRY_STATUSES = frozenset({429, 500, 502, 503, 504})
-MAX_ATTEMPTS = 4
+MAX_ATTEMPTS = 5
 RETRY_BACKOFF_SECONDS = 2.0
+
+
+class GitHubAPIError(RuntimeError):
+    """Raised when a GitHub API request keeps failing after all retries."""
 
 
 def _request(url: str, token: str | None) -> object:
@@ -61,12 +65,12 @@ def _request(url: str, token: str | None) -> object:
             retryable = True
 
         if not retryable or attempt == MAX_ATTEMPTS:
-            raise SystemExit(message)
+            raise GitHubAPIError(message)
 
         print(f"{message} (attempt {attempt}/{MAX_ATTEMPTS}), retrying...", file=sys.stderr)
-        time.sleep(RETRY_BACKOFF_SECONDS * attempt)
+        time.sleep(RETRY_BACKOFF_SECONDS * 2 ** (attempt - 1))
 
-    raise SystemExit("GitHub API request failed: retries exhausted")
+    raise GitHubAPIError("GitHub API request failed: retries exhausted")
 
 
 def fetch_repositories(owner: str, token: str | None) -> list[dict]:
@@ -158,6 +162,7 @@ def summarise_failure(run: dict) -> dict:
 def build_snapshot(owner: str, token: str | None) -> dict:
     """Build the full dashboard payload for ``owner``."""
     repositories = []
+    errors: list[str] = []
     total = 0
 
     for repo in fetch_repositories(owner, token):
@@ -165,9 +170,17 @@ def build_snapshot(owner: str, token: str | None) -> dict:
         if not full_name:
             continue
 
-        failures = [
-            summarise_failure(run) for run in unresolved_failures(fetch_runs(full_name, token))
-        ]
+        try:
+            runs = fetch_runs(full_name, token)
+        except GitHubAPIError as error:
+            # A transient API problem for one repository must not discard the
+            # whole snapshot; report it instead of aborting the build.
+            message = f"{full_name}: {error}"
+            print(f"Skipping {message}", file=sys.stderr)
+            errors.append(message)
+            continue
+
+        failures = [summarise_failure(run) for run in unresolved_failures(runs)]
         if not failures:
             continue
 
@@ -190,6 +203,21 @@ def build_snapshot(owner: str, token: str | None) -> dict:
         "repository_count": len(repositories),
         "failure_count": total,
         "repositories": repositories,
+        "errors": errors,
+        "degraded": bool(errors),
+    }
+
+
+def degraded_snapshot(owner: str, message: str) -> dict:
+    """Return an empty snapshot flagged as incomplete because of ``message``."""
+    return {
+        "generated_at": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "owner": owner,
+        "repository_count": 0,
+        "failure_count": 0,
+        "repositories": [],
+        "errors": [message],
+        "degraded": True,
     }
 
 
@@ -213,7 +241,13 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     token = os.getenv("ALERTS_TOKEN") or os.getenv("GITHUB_TOKEN")
 
-    snapshot = build_snapshot(args.owner, token)
+    try:
+        snapshot = build_snapshot(args.owner, token)
+    except GitHubAPIError as error:
+        # The dashboard is a best-effort snapshot: publish a degraded payload
+        # rather than failing the whole Pages deployment on an API outage.
+        print(f"{error}; publishing a degraded snapshot.", file=sys.stderr)
+        snapshot = degraded_snapshot(args.owner, str(error))
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(snapshot, indent=2) + "\n", encoding="utf-8")
@@ -222,6 +256,8 @@ def main(argv: list[str] | None = None) -> int:
         f"Wrote {snapshot['failure_count']} unresolved failures across "
         f"{snapshot['repository_count']} repositories to {args.output}."
     )
+    if snapshot["errors"]:
+        print(f"Snapshot is incomplete: {'; '.join(snapshot['errors'])}", file=sys.stderr)
     return 0
 
 
