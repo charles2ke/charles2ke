@@ -35,6 +35,7 @@ let selected = new Set();
 let dismissed = readDismissed();
 let refreshTimer = null;
 let busy = false;
+let snapshotWarning = "";
 
 function readDismissed() {
   try {
@@ -284,7 +285,13 @@ async function load() {
     };
     render();
     if (snapshot.errors.length) {
-      log(`Snapshot is incomplete:\n${snapshot.errors.join("\n")}`, true);
+      snapshotWarning = `Snapshot is incomplete:\n${snapshot.errors.join("\n")}`;
+      log(snapshotWarning, true);
+    } else if (snapshotWarning) {
+      if (elements.log.textContent === snapshotWarning) {
+        log("");
+      }
+      snapshotWarning = "";
     }
   } catch (error) {
     elements.summary.textContent = "Could not load the failure snapshot";
