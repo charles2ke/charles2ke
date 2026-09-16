@@ -64,6 +64,14 @@
 
 ---
 
+## 🛠️ Inside This Repository
+
+- 🚨 [Failure alerts dashboard](https://charles2ke.github.io/charles2ke/failures.html) — unresolved GitHub Actions failures across my repositories, refreshed automatically
+- 🧰 [Scripts](https://github.com/charles2ke/charles2ke/blob/main/scripts/README.md) — automation for the dashboard data, repository links and repository topics
+- 📚 [Wiki](https://github.com/charles2ke/charles2ke/blob/main/wiki/Home.md) — how this profile repository is put together
+
+---
+
 ## 🤝 Let's Connect
 
 Always open to new ideas and collaborations — say hi!
