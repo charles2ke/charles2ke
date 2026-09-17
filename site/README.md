@@ -38,6 +38,8 @@ window (7 days by default, `--release-drift-days` in
 [`Auto release`](../scripts/README.md) run visible even when no workflow
 failed, and disappears once the release is cut.
 
+![Release drift panel](screenshots/release-drift.png)
+
 The two write actions need a GitHub token with the `repo` scope (or a
 fine-grained token with `Actions: read and write`). The token is entered in the
 page and held in that tab's `sessionStorage` only — it is never sent anywhere

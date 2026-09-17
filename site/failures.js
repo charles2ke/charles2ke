@@ -336,6 +336,8 @@ async function load() {
     snapshot = {
       generated_at: payload.generated_at || "",
       repositories: Array.isArray(payload.repositories) ? payload.repositories : [],
+      releases: Array.isArray(payload.releases) ? payload.releases : [],
+      release_drift_days: payload.release_drift_days,
       errors: Array.isArray(payload.errors) ? payload.errors.map(String) : [],
     };
     render();
