@@ -311,7 +311,7 @@ def check_status(repository: Repository, sha: str) -> tuple[bool, str]:
 
     state = repository.combined_status(sha)
     if state not in GREEN_CONCLUSIONS:
-        return False, "failing commit status"
+        return False, "commit status is not green"
 
     if pending:
         return False, "checks still running: " + ", ".join(sorted(pending))
