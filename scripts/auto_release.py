@@ -249,6 +249,7 @@ class Repository:
                 break
             commits.extend(page_commits)
             page += 1
+        payload["commits"] = commits
         return payload
 
     def commits(self, ref: str, per_page: int = 100) -> list[dict]:

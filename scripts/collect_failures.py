@@ -28,7 +28,8 @@ REPOS_URL = API_ROOT + "/users/{owner}/repos?per_page=100&page={page}&type=owner
 RUNS_URL = API_ROOT + "/repos/{full_name}/actions/runs?per_page={per_page}&page={page}"
 RELEASE_URL = API_ROOT + "/repos/{full_name}/releases/latest"
 COMPARE_URL = API_ROOT + "/repos/{full_name}/compare/{base}...{head}?per_page=1"
-COMMITS_URL = API_ROOT + "/repos/{full_name}/commits?per_page=100&page={page}"
+COMMITS_PER_PAGE = 100
+COMMITS_URL = API_ROOT + "/repos/{full_name}/commits?per_page={per_page}&page={page}"
 DEFAULT_DRIFT_DAYS = 7
 FAILED_CONCLUSIONS = frozenset({"failure", "timed_out", "startup_failure"})
 RUN_PAGES = 2
@@ -166,6 +167,7 @@ def fetch_release_drift(
 
     "Drift" is unreleased work sitting on the default branch: either commits
     after the latest release, or a repository that has never been released.
+    ``default_branch`` is the branch compared with the latest release tag.
     The dashboard uses it to surface releases that a weekly ``Auto release``
     run should have cut but didn't.
     """
@@ -177,7 +179,10 @@ def fetch_release_drift(
             raise
         release = None
 
-    commits = _request(COMMITS_URL.format(full_name=full_name, page=1), token)
+    commits = _request(
+        COMMITS_URL.format(full_name=full_name, per_page=COMMITS_PER_PAGE, page=1),
+        token,
+    )
     commits = commits if isinstance(commits, list) else []
     head = commits[0] if commits else {}
     head_date = _parse_timestamp(((head.get("commit") or {}).get("committer") or {}).get("date"))
@@ -186,8 +191,13 @@ def fetch_release_drift(
         if not head:
             return None
         page = 2
-        while len(commits) == (page - 1) * 100:
-            batch = _request(COMMITS_URL.format(full_name=full_name, page=page), token)
+        while len(commits) == (page - 1) * COMMITS_PER_PAGE:
+            batch = _request(
+                COMMITS_URL.format(
+                    full_name=full_name, per_page=COMMITS_PER_PAGE, page=page
+                ),
+                token,
+            )
             if not isinstance(batch, list) or not batch:
                 break
             commits.extend(batch)
