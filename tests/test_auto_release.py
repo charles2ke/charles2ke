@@ -58,6 +58,7 @@ class FakeRepository(Repository):
         files: dict[str, list[dict]] | None = None,
         check_runs: list[dict] | None = None,
         status: str = "success",
+        branch_head: str | None = None,
     ):
         super().__init__("charles2ke/demo", "token")
         self._release = release
@@ -66,6 +67,7 @@ class FakeRepository(Repository):
         self._files = files or {}
         self._check_runs = check_runs or []
         self._status = status
+        self._branch_head = branch_head
         self.checked_refs: list[str] = []
         self.created: list[tuple[str, str]] = []
 
@@ -86,6 +88,8 @@ class FakeRepository(Repository):
 
     def commit(self, sha: str) -> dict:
         if sha == "main" and self._commits:
+            if self._branch_head:
+                return {"sha": self._branch_head}
             return self._commits[-1]
         return {"sha": sha, "files": self._files.get(sha, [])}
 
@@ -294,6 +298,18 @@ class TestEvaluate(unittest.TestCase):
         self.assertFalse(decision.released)
         self.assertIn("checks are not green", decision.reason)
         self.assertEqual([], repository.created)
+
+    def test_skips_when_branch_changes_during_evaluation(self):
+        repository = FakeRepository(
+            release=self._released(),
+            tags=["v1.1"],
+            commits=[commit("a1")],
+            branch_head="b2",
+        )
+        decision = self._evaluate(repository)
+
+        self.assertFalse(decision.released)
+        self.assertIn("changed while commits were inspected", decision.reason)
 
     def test_skips_when_commit_status_is_not_green(self):
         repository = FakeRepository(

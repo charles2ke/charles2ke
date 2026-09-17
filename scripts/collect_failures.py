@@ -29,7 +29,10 @@ RUNS_URL = API_ROOT + "/repos/{full_name}/actions/runs?per_page={per_page}&page=
 RELEASE_URL = API_ROOT + "/repos/{full_name}/releases/latest"
 COMPARE_URL = API_ROOT + "/repos/{full_name}/compare/{base}...{head}?per_page=1"
 COMMITS_PER_PAGE = 100
-COMMITS_URL = API_ROOT + "/repos/{full_name}/commits?per_page={per_page}&page={page}"
+COMMITS_URL = (
+    API_ROOT
+    + "/repos/{full_name}/commits?sha={branch}&per_page={per_page}&page={page}"
+)
 DEFAULT_DRIFT_DAYS = 7
 FAILED_CONCLUSIONS = frozenset({"failure", "timed_out", "startup_failure"})
 RUN_PAGES = 2
@@ -180,7 +183,12 @@ def fetch_release_drift(
         release = None
 
     commits = _request(
-        COMMITS_URL.format(full_name=full_name, per_page=COMMITS_PER_PAGE, page=1),
+        COMMITS_URL.format(
+            full_name=full_name,
+            branch=urllib.parse.quote(default_branch, safe=""),
+            per_page=COMMITS_PER_PAGE,
+            page=1,
+        ),
         token,
     )
     commits = commits if isinstance(commits, list) else []
@@ -194,7 +202,10 @@ def fetch_release_drift(
         while len(commits) == (page - 1) * COMMITS_PER_PAGE:
             batch = _request(
                 COMMITS_URL.format(
-                    full_name=full_name, per_page=COMMITS_PER_PAGE, page=page
+                    full_name=full_name,
+                    branch=urllib.parse.quote(default_branch, safe=""),
+                    per_page=COMMITS_PER_PAGE,
+                    page=page,
                 ),
                 token,
             )

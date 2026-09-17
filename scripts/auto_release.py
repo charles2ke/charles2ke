@@ -492,6 +492,16 @@ def evaluate(
 
     head = repository.commit(branch)
     head_sha = str(head.get("sha") or branch)
+    inspected_head_sha = str(commits[-1].get("sha") or "")
+    if head_sha != inspected_head_sha:
+        return Decision(
+            released=False,
+            reason=f"cannot release: {branch} changed while commits were inspected",
+            previous_tag=previous_tag,
+            commit_count=len(candidates),
+            commits=candidates,
+            dry_run=dry_run,
+        )
     if require_green_checks:
         green, description = check_status(repository, head_sha)
         if not green:
