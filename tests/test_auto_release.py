@@ -252,13 +252,25 @@ class TestEvaluate(unittest.TestCase):
             release=self._released(),
             tags=["v1.1"],
             commits=[commit("a1")],
-            check_runs=[{"name": "CI", "status": "completed", "conclusion": "failure"}],
+            check_runs=[{"name": "CI", "status": "completed", "conclusion": "cancelled"}],
         )
         decision = self._evaluate(repository)
 
         self.assertFalse(decision.released)
         self.assertIn("checks are not green", decision.reason)
         self.assertEqual([], repository.created)
+
+    def test_skips_when_commit_status_is_not_green(self):
+        repository = FakeRepository(
+            release=self._released(),
+            tags=["v1.1"],
+            commits=[commit("a1")],
+            status="pending",
+        )
+        decision = self._evaluate(repository)
+
+        self.assertFalse(decision.released)
+        self.assertIn("checks are not green", decision.reason)
 
     def test_skips_while_checks_are_still_running(self):
         repository = FakeRepository(

@@ -50,7 +50,6 @@ BREAKING_PATTERN = re.compile(
 )
 BOT_SUFFIX = "[bot]"
 GREEN_CONCLUSIONS = frozenset({"success", "skipped", "neutral"})
-RED_CONCLUSIONS = frozenset({"failure", "timed_out", "startup_failure", "action_required"})
 MAX_COMMITS_INSPECTED = 100
 
 
@@ -304,14 +303,14 @@ def check_status(repository: Repository, sha: str) -> tuple[bool, str]:
         name = str(check.get("name") or "check")
         if check.get("status") != "completed":
             pending.append(name)
-        elif str(check.get("conclusion") or "") in RED_CONCLUSIONS:
+        elif str(check.get("conclusion") or "") not in GREEN_CONCLUSIONS:
             red.append(name)
 
     if red:
         return False, "failing checks: " + ", ".join(sorted(red))
 
     state = repository.combined_status(sha)
-    if state == "failure":
+    if state not in GREEN_CONCLUSIONS:
         return False, "failing commit status"
 
     if pending:
