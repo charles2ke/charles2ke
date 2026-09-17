@@ -31,6 +31,13 @@ and a global one. Bulk actions apply to everything selected:
 | Copy links | Copies the selected run URLs to the clipboard |
 | Dismiss / Restore | Hides (or restores) failures locally, for triage |
 
+Above the failure list, a **Release drift** panel lists repositories whose
+default branch has unreleased commits older than the weekly auto-release
+window (7 days by default, `--release-drift-days` in
+`scripts/collect_failures.py`). It makes a missed or failed
+[`Auto release`](../scripts/README.md) run visible even when no workflow
+failed, and disappears once the release is cut.
+
 The two write actions need a GitHub token with the `repo` scope (or a
 fine-grained token with `Actions: read and write`). The token is entered in the
 page and held in that tab's `sessionStorage` only — it is never sent anywhere

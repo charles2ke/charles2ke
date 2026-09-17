@@ -311,7 +311,7 @@ class TestEvaluate(unittest.TestCase):
 
         self.assertFalse(decision.released)
         self.assertEqual("v1.2", decision.tag)
-        self.assertIn("dry run", decision.reason)
+        self.assertIn("ready for release", decision.reason)
         self.assertEqual([], repository.created)
 
     def test_falls_back_to_tags_when_there_is_no_release(self):
@@ -326,7 +326,7 @@ class TestSummary(unittest.TestCase):
     def test_summary_names_the_tag_and_commits(self):
         decision = Decision(
             released=True,
-            reason="released v1.2 with 1 commit(s)",
+            reason="1 commit(s) included",
             tag="v1.2",
             previous_tag="v1.1",
             commit_count=1,
@@ -365,7 +365,7 @@ class TestMain(unittest.TestCase):
     def test_writes_summary_and_outputs(self):
         decision = Decision(
             released=True,
-            reason="released v1.2 with 1 commit(s)",
+            reason="1 commit(s) included",
             tag="v1.2",
             previous_tag="v1.1",
             commit_count=1,

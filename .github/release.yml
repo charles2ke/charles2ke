@@ -1,0 +1,25 @@
+# Groups the notes GitHub generates for releases cut by the Auto release
+# workflow (.github/workflows/auto-release.yml). Copy this file into any
+# repository that wants the same grouping.
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+  categories:
+    - title: Features
+      labels:
+        - enhancement
+        - feature
+    - title: Fixes
+      labels:
+        - bug
+        - fix
+    - title: Documentation
+      labels:
+        - documentation
+    - title: Dependencies
+      labels:
+        - dependencies
+    - title: Other changes
+      labels:
+        - "*"

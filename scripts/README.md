@@ -53,6 +53,95 @@ echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' \
 
 Note that the agent tasks API is in public preview and may change.
 
+## `auto_release.py`
+
+The engine behind the reusable
+[`Auto release`](../.github/workflows/auto-release.yml) workflow. It answers
+one question per run — *does this repository deserve a new release right
+now?* — and only tags and publishes one when every gate agrees:
+
+1. The default branch is ahead of the latest release (or the repository has
+   never been released, in which case the first tag is `v1`).
+2. Those commits are not all excluded — `--skip-bot-commits` drops
+   bot-authored commits and `--exclude-path` drops commits that only touch
+   given path prefixes, so a Dependabot bump or a README tweak alone does not
+   cut a release.
+3. The previous release is at least `--min-age-days` old (default 7), keeping
+   releases weekly rather than firing on every merge.
+4. The newest unreleased commit has settled for `--settle-hours` (default 1),
+   so a release is never cut minutes after a merge.
+5. The head commit's checks are green — failing or still-running checks skip
+   the release unless `--allow-red-checks` is passed.
+
+The next tag follows the `v<major>[.<minor>]` scheme already used across these
+repositories: `v1` → `v1.1` → `v1.2`, with `--bump major` moving `v1.5` →
+`v2.0`. `--bump auto` picks major when a commit message contains
+`BREAKING CHANGE` or a `feat!:`-style marker. A tag that already exists is
+never reused. Release notes come from GitHub's own
+`generate_release_notes`, which produces the same "What's Changed" body as a
+hand-cut release; group them by label with a `.github/release.yml` file in the
+repository being released.
+
+### Usage
+
+```bash
+# Preview the decision for a repository without creating anything.
+python scripts/auto_release.py --repository charles2ke/travel --dry-run
+
+# Cut the release for real (needs RELEASE_TOKEN or GITHUB_TOKEN).
+python scripts/auto_release.py --repository charles2ke/travel
+```
+
+Options: `--min-age-days`, `--settle-hours`, `--bump {minor,major,auto}`,
+`--exclude-path` (repeatable), `--skip-bot-commits`, `--allow-red-checks` and
+`--dry-run`. The repository defaults to `$GITHUB_REPOSITORY`.
+
+Every run writes a Markdown job summary naming the tag, the previous release
+and the commits included — or, when nothing is released, the reason why. The
+decision is also exposed as step outputs (`released`, `tag`, `previous_tag`,
+`commit_count`, `reason`, `url`).
+
+The token needs permission to create releases: `contents: write` for the
+built-in `GITHUB_TOKEN`, or the `repo` scope for a personal access token.
+
+## `rollout-auto-release.sh`
+
+Adds the thin `Weekly release` caller workflow to every repository so they all
+share the reusable workflow kept here. Each repository gets its own cron
+minute, spread across Monday morning, so 20+ scheduled runs do not fire at the
+same moment.
+
+### Usage
+
+Always start with a dry run — it prints the workflow that would be written for
+each repository and makes no API calls:
+
+```bash
+./scripts/rollout-auto-release.sh --dry-run
+./scripts/rollout-auto-release.sh --dry-run travel   # a single repository
+```
+
+Then roll it out for real. By default the script pushes a branch and opens a
+pull request per repository; `--direct` commits straight to the default branch
+instead:
+
+```bash
+./scripts/rollout-auto-release.sh
+./scripts/rollout-auto-release.sh --direct travel
+```
+
+Non-dry runs need [GitHub CLI (`gh`)](https://cli.github.com/) authenticated
+with the `repo` and `workflow` scopes. Override the account with `OWNER` and
+the pull request branch with `BRANCH`. The repository list lives in
+`REPO_ORDER` near the top of the script.
+
+Repositories with a release backlog can be caught up immediately by running
+their `Weekly release` workflow once by hand (`workflow_dispatch`, optionally
+with `dry-run` first); the schedule takes over from there. For repositories
+where a release should be approved by a human, point the caller's
+`environment:` input at a GitHub Environment with required reviewers — the
+release job then waits for approval.
+
 ## `collect_failures.py`
 
 Builds the JSON snapshot behind the
@@ -75,10 +164,18 @@ Options:
 - `--owner` — GitHub account to scan (defaults to `charles2ke`).
 - `--output` — where to write the JSON snapshot (defaults to
   `_site/failures.json`).
+- `--release-drift-days` — age threshold for unreleased work (defaults to 7;
+  negative values skip release drift collection).
 
 The script reads an optional token from `ALERTS_TOKEN` or `GITHUB_TOKEN`.
 Without a token it uses unauthenticated requests, which are rate limited to 60
 per hour and are usually not enough to scan every repository.
+
+It also reports **release drift**: repositories whose default branch has
+unreleased commits older than `--release-drift-days` (7 by default; pass a
+negative value to skip the check). The dashboard shows these in a separate
+panel, so a weekly `Auto release` run that never happened is visible even when
+no workflow failed.
 
 The `Deploy to GitHub Pages` workflow runs this script on every deploy and on a
 schedule, so the published dashboard keeps up with new failures. The page

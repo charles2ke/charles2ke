@@ -479,7 +479,7 @@ def evaluate(
     if dry_run:
         return Decision(
             released=False,
-            reason=f"dry run: would release {tag} with {len(candidates)} commit(s)",
+            reason=f"{len(candidates)} commit(s) ready for release",
             tag=tag,
             previous_tag=previous_tag,
             commit_count=len(candidates),
@@ -490,7 +490,7 @@ def evaluate(
     release = repository.create_release(tag, branch)
     return Decision(
         released=True,
-        reason=f"released {tag} with {len(candidates)} commit(s)",
+        reason=f"{len(candidates)} commit(s) included",
         tag=tag,
         previous_tag=previous_tag,
         commit_count=len(candidates),
