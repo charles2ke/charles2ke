@@ -26,11 +26,15 @@ const elements = {
   tokenSave: document.getElementById("token-save"),
   tokenClear: document.getElementById("token-clear"),
   log: document.getElementById("action-log"),
+  drift: document.getElementById("release-drift"),
+  driftList: document.getElementById("drift-list"),
+  driftSummary: document.getElementById("drift-summary"),
+  driftTemplate: document.getElementById("drift-template"),
   repoTemplate: document.getElementById("repo-template"),
   failureTemplate: document.getElementById("failure-template"),
 };
 
-let snapshot = { repositories: [], generated_at: "", errors: [] };
+let snapshot = { repositories: [], releases: [], generated_at: "", errors: [] };
 let selected = new Set();
 let dismissed = readDismissed();
 let refreshTimer = null;
@@ -152,10 +156,61 @@ function render() {
   elements.refreshStatus.textContent = snapshot.generated_at
     ? `Snapshot ${formatTimestamp(snapshot.generated_at)}`
     : "";
+  renderReleaseDrift();
   elements.dismissedCount.textContent = String(dismissed.size);
   elements.restore.disabled = dismissed.size === 0;
 
   updateSelectionState();
+}
+
+function renderReleaseDrift() {
+  const entries = snapshot.releases || [];
+  elements.driftList.textContent = "";
+  elements.drift.hidden = entries.length === 0;
+
+  if (entries.length === 0) {
+    elements.driftSummary.textContent = "";
+    return;
+  }
+
+  const days = Number(snapshot.release_drift_days);
+  elements.driftSummary.textContent =
+    `${entries.length} ${entries.length === 1 ? "repository has" : "repositories have"} ` +
+    `unreleased commits${Number.isFinite(days) ? ` older than ${days} days` : ""}`;
+
+  for (const entry of entries) {
+    const node = elements.driftTemplate.content.firstElementChild.cloneNode(true);
+    const repoLink = node.querySelector(".drift-repo");
+    const repoUrl = safeUrl(entry.url);
+    repoLink.textContent = entry.full_name || entry.name || "";
+    if (repoUrl) {
+      repoLink.href = repoUrl;
+    } else {
+      repoLink.removeAttribute("href");
+    }
+
+    const commits = Number(entry.commits_since) || 0;
+    const parts = [`${commits} unreleased ${commits === 1 ? "commit" : "commits"}`];
+    parts.push(
+      entry.latest_tag
+        ? `since ${entry.latest_tag}${entry.released_at ? ` (${formatTimestamp(entry.released_at)})` : ""}`
+        : "never released"
+    );
+    if (Number.isFinite(Number(entry.age_days))) {
+      parts.push(`${Number(entry.age_days)} days of drift`);
+    }
+    node.querySelector(".drift-meta").textContent = parts.join(" · ");
+
+    const releaseLink = node.querySelector(".drift-release");
+    const releaseUrl = safeUrl(entry.release_url);
+    if (releaseUrl) {
+      releaseLink.href = releaseUrl;
+    } else {
+      releaseLink.remove();
+    }
+
+    elements.driftList.append(node);
+  }
 }
 
 function renderRepository(repository, failures) {

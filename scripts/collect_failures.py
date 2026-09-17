@@ -26,6 +26,10 @@ REPO_OWNER = "charles2ke"
 API_ROOT = "https://api.github.com"
 REPOS_URL = API_ROOT + "/users/{owner}/repos?per_page=100&page={page}&type=owner"
 RUNS_URL = API_ROOT + "/repos/{full_name}/actions/runs?per_page={per_page}&page={page}"
+RELEASE_URL = API_ROOT + "/repos/{full_name}/releases/latest"
+COMPARE_URL = API_ROOT + "/repos/{full_name}/compare/{base}...{head}?per_page=1"
+COMMITS_URL = API_ROOT + "/repos/{full_name}/commits?per_page=1"
+DEFAULT_DRIFT_DAYS = 7
 FAILED_CONCLUSIONS = frozenset({"failure", "timed_out", "startup_failure"})
 RUN_PAGES = 2
 RUNS_PER_PAGE = 100
@@ -142,6 +146,84 @@ def unresolved_failures(runs: list[dict]) -> list[dict]:
     return failures
 
 
+def _parse_timestamp(value: object) -> dt.datetime | None:
+    if not value:
+        return None
+    text = str(value).replace("Z", "+00:00")
+    try:
+        parsed = dt.datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=dt.timezone.utc)
+    return parsed.astimezone(dt.timezone.utc)
+
+
+def fetch_release_drift(full_name: str, token: str | None) -> dict | None:
+    """Return the unreleased-work summary for a repository, or ``None``.
+
+    "Drift" is unreleased work sitting on the default branch: either commits
+    after the latest release, or a repository that has never been released.
+    The dashboard uses it to surface releases that a weekly ``Auto release``
+    run should have cut but didn't.
+    """
+    try:
+        release = _request(RELEASE_URL.format(full_name=full_name), token)
+    except GitHubAPIError as error:
+        # A repository with no releases answers 404; that is drift, not an error.
+        if "404" not in str(error):
+            raise
+        release = None
+
+    latest_commit = _request(COMMITS_URL.format(full_name=full_name), token)
+    head = latest_commit[0] if isinstance(latest_commit, list) and latest_commit else {}
+    head_date = _parse_timestamp(((head.get("commit") or {}).get("committer") or {}).get("date"))
+
+    if not isinstance(release, dict) or not release.get("tag_name"):
+        if not head:
+            return None
+        return {
+            "latest_tag": "",
+            "release_url": "",
+            "released_at": "",
+            "commits_since": 1,
+            "last_commit_at": head_date.strftime("%Y-%m-%dT%H:%M:%SZ") if head_date else "",
+        }
+
+    tag = str(release.get("tag_name"))
+    comparison = _request(
+        COMPARE_URL.format(
+            full_name=full_name,
+            base=urllib.parse.quote(tag, safe=""),
+            head=urllib.parse.quote(str(release.get("target_commitish") or "HEAD"), safe=""),
+        ),
+        token,
+    )
+    ahead_by = int(comparison.get("ahead_by") or 0) if isinstance(comparison, dict) else 0
+    if ahead_by <= 0:
+        return None
+
+    released_at = _parse_timestamp(release.get("published_at") or release.get("created_at"))
+    return {
+        "latest_tag": tag,
+        "release_url": str(release.get("html_url") or ""),
+        "released_at": released_at.strftime("%Y-%m-%dT%H:%M:%SZ") if released_at else "",
+        "commits_since": ahead_by,
+        "last_commit_at": head_date.strftime("%Y-%m-%dT%H:%M:%SZ") if head_date else "",
+    }
+
+
+def drift_age_days(drift: dict, now: dt.datetime | None = None) -> float:
+    """Return how long the oldest unreleased work has been waiting, in days."""
+    now = now or dt.datetime.now(dt.timezone.utc)
+    reference = _parse_timestamp(drift.get("released_at")) or _parse_timestamp(
+        drift.get("last_commit_at")
+    )
+    if reference is None:
+        return 0.0
+    return max((now - reference).total_seconds() / 86400, 0.0)
+
+
 def summarise_failure(run: dict) -> dict:
     """Project a workflow run onto the fields the dashboard needs."""
     actor = run.get("triggering_actor") or run.get("actor") or {}
@@ -159,16 +241,43 @@ def summarise_failure(run: dict) -> dict:
     }
 
 
-def build_snapshot(owner: str, token: str | None) -> dict:
-    """Build the full dashboard payload for ``owner``."""
+def build_snapshot(owner: str, token: str | None, drift_days: float | None = None) -> dict:
+    """Build the full dashboard payload for ``owner``.
+
+    When ``drift_days`` is set, repositories whose unreleased work is older
+    than that many days are also reported under ``releases``.
+    """
     repositories = []
     errors: list[str] = []
     total = 0
+    releases: list[dict] = []
 
     for repo in fetch_repositories(owner, token):
         full_name = str(repo.get("full_name") or "")
         if not full_name:
             continue
+
+        if drift_days is not None:
+            try:
+                drift = fetch_release_drift(full_name, token)
+            except GitHubAPIError as error:
+                message = f"{full_name} (releases): {error}"
+                print(f"Skipping {message}", file=sys.stderr)
+                errors.append(message)
+                drift = None
+
+            if drift is not None:
+                age = drift_age_days(drift)
+                if age >= drift_days:
+                    releases.append(
+                        {
+                            "name": str(repo.get("name") or ""),
+                            "full_name": full_name,
+                            "url": str(repo.get("html_url") or ""),
+                            "age_days": round(age, 1),
+                            **drift,
+                        }
+                    )
 
         try:
             runs = fetch_runs(full_name, token)
@@ -196,6 +305,7 @@ def build_snapshot(owner: str, token: str | None) -> dict:
         )
 
     repositories.sort(key=lambda entry: (-len(entry["failures"]), entry["name"].casefold()))
+    releases.sort(key=lambda entry: (-entry["age_days"], entry["name"].casefold()))
 
     return {
         "generated_at": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -203,6 +313,9 @@ def build_snapshot(owner: str, token: str | None) -> dict:
         "repository_count": len(repositories),
         "failure_count": total,
         "repositories": repositories,
+        "release_drift_days": drift_days,
+        "release_drift_count": len(releases),
+        "releases": releases,
         "errors": errors,
         "degraded": bool(errors),
     }
@@ -216,6 +329,9 @@ def degraded_snapshot(owner: str, message: str) -> dict:
         "repository_count": 0,
         "failure_count": 0,
         "repositories": [],
+        "release_drift_days": None,
+        "release_drift_count": 0,
+        "releases": [],
         "errors": [message],
         "degraded": True,
     }
@@ -234,6 +350,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=Path("_site/failures.json"),
         help="Path of the JSON snapshot to write (default: _site/failures.json)",
     )
+    parser.add_argument(
+        "--release-drift-days",
+        type=float,
+        default=DEFAULT_DRIFT_DAYS,
+        help=(
+            "Report repositories whose unreleased work is at least this many days "
+            f"old (default: {DEFAULT_DRIFT_DAYS}; use a negative value to skip)"
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -241,8 +366,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     token = os.getenv("ALERTS_TOKEN") or os.getenv("GITHUB_TOKEN")
 
+    drift_days = args.release_drift_days if args.release_drift_days >= 0 else None
+
     try:
-        snapshot = build_snapshot(args.owner, token)
+        snapshot = build_snapshot(args.owner, token, drift_days)
     except GitHubAPIError as error:
         # The dashboard is a best-effort snapshot: publish a degraded payload
         # rather than failing the whole Pages deployment on an API outage.
@@ -256,6 +383,11 @@ def main(argv: list[str] | None = None) -> int:
         f"Wrote {snapshot['failure_count']} unresolved failures across "
         f"{snapshot['repository_count']} repositories to {args.output}."
     )
+    if drift_days is not None:
+        print(
+            f"{snapshot['release_drift_count']} repositories have unreleased commits "
+            f"older than {drift_days:g} day(s)."
+        )
     if snapshot["errors"]:
         print(f"Snapshot is incomplete: {'; '.join(snapshot['errors'])}", file=sys.stderr)
     return 0
