@@ -66,6 +66,7 @@ class FakeRepository(Repository):
         self._files = files or {}
         self._check_runs = check_runs or []
         self._status = status
+        self.checked_refs: list[str] = []
         self.created: list[tuple[str, str]] = []
 
     def default_branch(self) -> str:
@@ -84,9 +85,12 @@ class FakeRepository(Repository):
         return list(reversed(self._commits))
 
     def commit(self, sha: str) -> dict:
+        if sha == "main" and self._commits:
+            return self._commits[-1]
         return {"sha": sha, "files": self._files.get(sha, [])}
 
     def check_runs(self, ref: str) -> list[dict]:
+        self.checked_refs.append(ref)
         return self._check_runs
 
     def combined_status(self, ref: str) -> str:
@@ -95,6 +99,36 @@ class FakeRepository(Repository):
     def create_release(self, tag: str, target: str) -> dict:
         self.created.append((tag, target))
         return {"html_url": f"https://github.com/charles2ke/demo/releases/tag/{tag}"}
+
+
+class TestRepositoryPagination(unittest.TestCase):
+    def test_compare_loads_every_commit_page(self):
+        repository = Repository("charles2ke/demo", "token")
+        first_page = [commit(str(index)) for index in range(100)]
+        last_commit = commit("100")
+
+        with patch.object(
+            repository,
+            "get",
+            side_effect=[
+                {"ahead_by": 101, "commits": first_page},
+                {"commits": [last_commit]},
+            ],
+        ) as get:
+            comparison = repository.compare("v1", "main")
+
+        self.assertEqual(101, len(comparison["commits"]))
+        self.assertIn("page=2", get.call_args_list[1].args[0])
+
+    def test_commits_loads_every_page(self):
+        repository = Repository("charles2ke/demo", "token")
+        first_page = [commit(str(index)) for index in range(100)]
+
+        with patch.object(repository, "get", side_effect=[first_page, [commit("100")]]) as get:
+            commits = repository.commits("main")
+
+        self.assertEqual(101, len(commits))
+        self.assertIn("page=2", get.call_args_list[1].args[0])
 
 
 class TestVersions(unittest.TestCase):
@@ -246,6 +280,7 @@ class TestEvaluate(unittest.TestCase):
 
         self.assertTrue(decision.released)
         self.assertEqual(1, decision.commit_count)
+        self.assertEqual(["b2"], repository.checked_refs)
 
     def test_skips_when_checks_are_failing(self):
         repository = FakeRepository(

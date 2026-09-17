@@ -231,12 +231,39 @@ class Repository:
     def compare(self, base: str, head: str) -> dict:
         base_ref = urllib.parse.quote(base, safe="")
         head_ref = urllib.parse.quote(head, safe="")
-        payload = self.get(f"/compare/{base_ref}...{head_ref}?per_page=100")
-        return payload if isinstance(payload, dict) else {}
+        path = f"/compare/{base_ref}...{head_ref}"
+        payload = self.get(f"{path}?per_page=100&page=1")
+        if not isinstance(payload, dict):
+            return {}
+
+        commits = payload.get("commits")
+        if not isinstance(commits, list):
+            return payload
+
+        ahead_by = int(payload.get("ahead_by") or len(commits))
+        page = 2
+        while len(commits) < ahead_by:
+            batch = self.get(f"{path}?per_page=100&page={page}")
+            page_commits = batch.get("commits") if isinstance(batch, dict) else None
+            if not isinstance(page_commits, list) or not page_commits:
+                break
+            commits.extend(page_commits)
+            page += 1
+        return payload
 
     def commits(self, ref: str, per_page: int = 100) -> list[dict]:
-        payload = self.get(f"/commits?sha={urllib.parse.quote(ref, safe='')}&per_page={per_page}")
-        return payload if isinstance(payload, list) else []
+        ref_path = urllib.parse.quote(ref, safe="")
+        commits = []
+        page = 1
+        while True:
+            payload = self.get(f"/commits?sha={ref_path}&per_page={per_page}&page={page}")
+            if not isinstance(payload, list):
+                break
+            commits.extend(payload)
+            if len(payload) < per_page:
+                break
+            page += 1
+        return commits
 
     def commit(self, sha: str) -> dict:
         payload = self.get(f"/commits/{urllib.parse.quote(sha, safe='')}")
@@ -391,6 +418,13 @@ def evaluate(
         comparison = repository.compare(previous_tag, branch)
         commits = comparison.get("commits") or []
         ahead_by = int(comparison.get("ahead_by") or len(commits))
+        if len(commits) < ahead_by:
+            return Decision(
+                released=False,
+                reason=f"cannot release: only loaded {len(commits)} of {ahead_by} commits",
+                previous_tag=previous_tag,
+                dry_run=dry_run,
+            )
     else:
         commits = list(reversed(repository.commits(branch, per_page=MAX_COMMITS_INSPECTED)))
         ahead_by = len(commits)
@@ -455,7 +489,8 @@ def evaluate(
                 dry_run=dry_run,
             )
 
-    head_sha = str(candidates[-1].get("sha") or commits[-1].get("sha") or branch)
+    head = repository.commit(branch)
+    head_sha = str(head.get("sha") or branch)
     if require_green_checks:
         green, description = check_status(repository, head_sha)
         if not green:

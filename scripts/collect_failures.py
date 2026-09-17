@@ -28,7 +28,7 @@ REPOS_URL = API_ROOT + "/users/{owner}/repos?per_page=100&page={page}&type=owner
 RUNS_URL = API_ROOT + "/repos/{full_name}/actions/runs?per_page={per_page}&page={page}"
 RELEASE_URL = API_ROOT + "/repos/{full_name}/releases/latest"
 COMPARE_URL = API_ROOT + "/repos/{full_name}/compare/{base}...{head}?per_page=1"
-COMMITS_URL = API_ROOT + "/repos/{full_name}/commits?per_page=1"
+COMMITS_URL = API_ROOT + "/repos/{full_name}/commits?per_page=100&page={page}"
 DEFAULT_DRIFT_DAYS = 7
 FAILED_CONCLUSIONS = frozenset({"failure", "timed_out", "startup_failure"})
 RUN_PAGES = 2
@@ -159,7 +159,9 @@ def _parse_timestamp(value: object) -> dt.datetime | None:
     return parsed.astimezone(dt.timezone.utc)
 
 
-def fetch_release_drift(full_name: str, token: str | None) -> dict | None:
+def fetch_release_drift(
+    full_name: str, default_branch: str, token: str | None
+) -> dict | None:
     """Return the unreleased-work summary for a repository, or ``None``.
 
     "Drift" is unreleased work sitting on the default branch: either commits
@@ -175,18 +177,26 @@ def fetch_release_drift(full_name: str, token: str | None) -> dict | None:
             raise
         release = None
 
-    latest_commit = _request(COMMITS_URL.format(full_name=full_name), token)
-    head = latest_commit[0] if isinstance(latest_commit, list) and latest_commit else {}
+    commits = _request(COMMITS_URL.format(full_name=full_name, page=1), token)
+    commits = commits if isinstance(commits, list) else []
+    head = commits[0] if commits else {}
     head_date = _parse_timestamp(((head.get("commit") or {}).get("committer") or {}).get("date"))
 
     if not isinstance(release, dict) or not release.get("tag_name"):
         if not head:
             return None
+        page = 2
+        while len(commits) == (page - 1) * 100:
+            batch = _request(COMMITS_URL.format(full_name=full_name, page=page), token)
+            if not isinstance(batch, list) or not batch:
+                break
+            commits.extend(batch)
+            page += 1
         return {
             "latest_tag": "",
             "release_url": "",
             "released_at": "",
-            "commits_since": 1,
+            "commits_since": len(commits),
             "last_commit_at": head_date.strftime("%Y-%m-%dT%H:%M:%SZ") if head_date else "",
         }
 
@@ -195,7 +205,7 @@ def fetch_release_drift(full_name: str, token: str | None) -> dict | None:
         COMPARE_URL.format(
             full_name=full_name,
             base=urllib.parse.quote(tag, safe=""),
-            head=urllib.parse.quote(str(release.get("target_commitish") or "HEAD"), safe=""),
+            head=urllib.parse.quote(default_branch, safe=""),
         ),
         token,
     )
@@ -259,7 +269,9 @@ def build_snapshot(owner: str, token: str | None, drift_days: float | None = Non
 
         if drift_days is not None:
             try:
-                drift = fetch_release_drift(full_name, token)
+                drift = fetch_release_drift(
+                    full_name, str(repo.get("default_branch") or "main"), token
+                )
             except GitHubAPIError as error:
                 message = f"{full_name} (releases): {error}"
                 print(f"Skipping {message}", file=sys.stderr)

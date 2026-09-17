@@ -202,30 +202,43 @@ class TestReleaseDrift(unittest.TestCase):
 
     def test_reports_commits_after_the_latest_release(self):
         responses = [self.release, self.head, {"ahead_by": 12}]
-        with patch("scripts.collect_failures._request", side_effect=responses):
-            drift = fetch_release_drift("charles2ke/demo", None)
+        with patch("scripts.collect_failures._request", side_effect=responses) as request:
+            drift = fetch_release_drift("charles2ke/demo", "trunk", None)
 
         self.assertEqual("v1.1", drift["latest_tag"])
         self.assertEqual(12, drift["commits_since"])
         self.assertEqual("2026-09-10T08:00:00Z", drift["last_commit_at"])
+        self.assertIn("v1.1...trunk", request.call_args_list[2].args[0])
 
     def test_ignores_repositories_already_released(self):
         responses = [self.release, self.head, {"ahead_by": 0}]
         with patch("scripts.collect_failures._request", side_effect=responses):
-            self.assertIsNone(fetch_release_drift("charles2ke/demo", None))
+            self.assertIsNone(fetch_release_drift("charles2ke/demo", "trunk", None))
 
     def test_never_released_repository_is_drift(self):
         error = GitHubAPIError("GitHub API request failed: 404 Not Found")
-        with patch("scripts.collect_failures._request", side_effect=[error, self.head]):
-            drift = fetch_release_drift("charles2ke/demo", None)
+        commits = self.head + [{"sha": "older"}]
+        with patch("scripts.collect_failures._request", side_effect=[error, commits]):
+            drift = fetch_release_drift("charles2ke/demo", "trunk", None)
 
         self.assertEqual("", drift["latest_tag"])
-        self.assertEqual(1, drift["commits_since"])
+        self.assertEqual(2, drift["commits_since"])
+
+    def test_counts_paginated_history_without_a_release(self):
+        error = GitHubAPIError("GitHub API request failed: 404 Not Found")
+        first_page = self.head + [{"sha": str(index)} for index in range(99)]
+        with patch(
+            "scripts.collect_failures._request",
+            side_effect=[error, first_page, [{"sha": "oldest"}]],
+        ):
+            drift = fetch_release_drift("charles2ke/demo", "trunk", None)
+
+        self.assertEqual(101, drift["commits_since"])
 
     def test_empty_repository_is_not_drift(self):
         error = GitHubAPIError("GitHub API request failed: 404 Not Found")
         with patch("scripts.collect_failures._request", side_effect=[error, []]):
-            self.assertIsNone(fetch_release_drift("charles2ke/demo", None))
+            self.assertIsNone(fetch_release_drift("charles2ke/demo", "trunk", None))
 
     def test_other_api_errors_are_raised(self):
         error = GitHubAPIError("GitHub API request failed: 502 Bad Gateway")
@@ -233,7 +246,7 @@ class TestReleaseDrift(unittest.TestCase):
             patch("scripts.collect_failures._request", side_effect=error),
             self.assertRaises(GitHubAPIError),
         ):
-            fetch_release_drift("charles2ke/demo", None)
+            fetch_release_drift("charles2ke/demo", "trunk", None)
 
     def test_age_is_measured_from_the_last_release(self):
         now = dt.datetime(2026, 9, 17, 8, 0, tzinfo=dt.timezone.utc)
@@ -276,7 +289,7 @@ class TestSnapshotDrift(unittest.TestCase):
             patch("scripts.collect_failures.fetch_runs", return_value=[]),
             patch(
                 "scripts.collect_failures.fetch_release_drift",
-                side_effect=lambda full_name, token: drifts[full_name],
+                side_effect=lambda full_name, default_branch, token: drifts[full_name],
             ),
         ):
             return build_snapshot("charles2ke", None, drift_days)
