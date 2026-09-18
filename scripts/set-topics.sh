@@ -5,7 +5,7 @@
 # Applies a curated set of GitHub topics to charles2ke's repositories using
 # the GitHub CLI. Topics are metadata, not files, so this script exists to
 # make that one-time (or re-runnable) operation reviewable and repeatable
-# instead of requiring 13 manual visits to the repo settings UI.
+# instead of requiring 22 manual visits to the repo settings UI.
 #
 # Usage:
 #   scripts/set-topics.sh [--dry-run] [repo-name]
@@ -33,8 +33,15 @@ OWNER="${OWNER:-charles2ke}"
 # edit; add/remove entries here to change what gets applied.
 declare -A REPO_TOPICS=(
   ["5-Mins"]="alerts catastrophe disaster safe"
+  ["Advantage"]="insurance insurtech policy-management typescript"
   ["Agent-Chaos-Monkey"]="chaos-engineering ai-agents llm resilience-testing evals dotnet react copilot-studio"
   ["baby-model"]="ai llm model"
+  ["crabs"]="security ai-agents access-control python"
+  ["GitDb"]="database github git-as-a-database python"
+  ["platform-shared"]="platform-engineering shared-services authentication notifications javascript"
+  ["social"]="social-media content-scheduling typescript"
+  ["TitoOS"]="ai-agents agent-runtime operating-system python"
+  ["X-Big-Brother"]="privacy data-protection surveillance typescript"
   ["Message-Flow"]="chain-of-responsibility design-patterns dotnet csharp java middleware pipeline"
   ["design-patterns"]="design-patterns typescript software-architecture learning"
   ["tax-break"]="tax-calculator fintech typescript"
@@ -53,8 +60,15 @@ declare -A REPO_TOPICS=(
 # hashing order.
 REPO_ORDER=(
   "5-Mins"
+  "Advantage"
   "Agent-Chaos-Monkey"
   "baby-model"
+  "crabs"
+  "GitDb"
+  "platform-shared"
+  "social"
+  "TitoOS"
+  "X-Big-Brother"
   "Message-Flow"
   "design-patterns"
   "tax-break"
