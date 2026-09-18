@@ -8,6 +8,7 @@ import sys
 import textwrap
 import unittest
 from pathlib import Path
+from typing import ClassVar
 from unittest.mock import MagicMock, patch
 
 # Make the scripts package importable without installing.
@@ -119,6 +120,59 @@ class TestBuildBadges(unittest.TestCase):
     def test_underscores_are_escaped_in_badge_url(self):
         badge = _badge("Field", "Data_Engineering", "0A66C2")
         self.assertIn("Field-Data__Engineering-", badge)
+
+
+class TestNewRepoBadgeMappings(unittest.TestCase):
+    """Guards the badge mappings added for Advantage, platform-shared and X-Big-Brother."""
+
+    EXPECTED: ClassVar[dict[str, tuple[str, str]]] = {
+        "advantage": ("Insurance", "One-stop policy management"),
+        "platform-shared": ("Platform Engineering", "Reusable shared services"),
+        "x-big-brother": ("Digital Privacy", "Control over personal data"),
+    }
+
+    def test_mappings_are_registered(self):
+        for key, expected in self.EXPECTED.items():
+            with self.subTest(repo=key):
+                self.assertEqual(REPO_BADGES.get(key), expected)
+
+    def test_badges_render_mapped_field_and_value(self):
+        for key, (field, value) in self.EXPECTED.items():
+            with self.subTest(repo=key):
+                badges = build_badges(key)
+                self.assertIn(f'alt="Field: {field}"', badges)
+                self.assertIn(f'alt="Value: {value}"', badges)
+
+    def test_badges_do_not_fall_back_to_defaults(self):
+        for key in self.EXPECTED:
+            with self.subTest(repo=key):
+                badges = build_badges(key)
+                self.assertNotIn(f'alt="Field: {DEFAULT_BADGES[0]}"', badges)
+                self.assertNotIn(f'alt="Value: {DEFAULT_BADGES[1]}"', badges)
+
+    def test_lookup_matches_actual_repository_casing(self):
+        for repo_name in ("Advantage", "platform-shared", "X-Big-Brother"):
+            with self.subTest(repo=repo_name):
+                self.assertEqual(build_badges(repo_name), build_badges(repo_name.lower()))
+
+    def test_hyphenated_value_is_escaped_in_badge_url(self):
+        self.assertIn("Value-One--stop%20policy%20management-", build_badges("advantage"))
+
+    def test_repo_lines_use_mapped_badges(self):
+        repos = [
+            {
+                "full_name": f"charles2ke/{name}",
+                "name": name,
+                "html_url": f"https://github.com/charles2ke/{name}",
+                "fork": False,
+                "description": "Desc",
+            }
+            for name in ("Advantage", "platform-shared", "X-Big-Brother")
+        ]
+        result = build_repo_lines(repos)
+        for field, value in self.EXPECTED.values():
+            self.assertIn(f'alt="Field: {field}"', result)
+            self.assertIn(f'alt="Value: {value}"', result)
 
 
 class TestUpdateReadme(unittest.TestCase):

@@ -26,6 +26,7 @@ DEFAULT_BADGES = ("Software Engineering", "Hands-on learning and experimentation
 # Repository name (case-insensitive) → (field it impacts, value it adds).
 REPO_BADGES: dict[str, tuple[str, str]] = {
     "5-mins": ("Disaster Alerts", "Early warning awareness"),
+    "advantage": ("Insurance", "One-stop policy management"),
     "agent-chaos-monkey": ("Reliability Engineering", "Safer agent failure recovery"),
     "baby-model": ("Private AI", "Grounded personal answers"),
     "basa": ("Elder Care", "Coordinated caregiving"),
@@ -37,12 +38,14 @@ REPO_BADGES: dict[str, tuple[str, str]] = {
     "nakshatra": ("E-Commerce", "Streamlined online shopping"),
     "night-sky": ("Astronomy Visualisation", "Accurate sky reconstruction"),
     "opentrading": ("FinTech", "Global trade execution"),
+    "platform-shared": ("Platform Engineering", "Reusable shared services"),
     "portfolio-watcher": ("Personal Finance", "Unified portfolio view"),
     "social": ("Social Media", "Coordinated audience engagement"),
     "tax-break": ("Taxation", "Simplified tax filing"),
     "titoos": ("Agent Platforms", "Purpose-built agent runtime"),
     "travel": ("Travel", "Easier trip discovery"),
     "workout": ("Health and Fitness", "Consistent training habits"),
+    "x-big-brother": ("Digital Privacy", "Control over personal data"),
 }
 
 
