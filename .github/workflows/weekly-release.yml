@@ -1,0 +1,27 @@
+name: Weekly release
+
+# Thin caller for the reusable Auto release workflow. The same ~10 lines are
+# rolled out to every repository by scripts/rollout-auto-release.sh, with a
+# staggered cron so 20+ repositories do not all run at the same minute.
+
+on:
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Report the decision without creating a release.
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    uses: ./.github/workflows/auto-release.yml
+    permissions:
+      contents: write
+    with:
+      dry-run: ${{ inputs.dry-run || false }}
+      exclude-paths: "site/screenshots wiki"

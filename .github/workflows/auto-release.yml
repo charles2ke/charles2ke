@@ -1,0 +1,163 @@
+name: Auto release
+
+# Reusable workflow that cuts a release when the default branch has unreleased
+# work. Call it from any repository:
+#
+#   jobs:
+#     release:
+#       uses: charles2ke/charles2ke/.github/workflows/auto-release.yml@main
+#       permissions:
+#         contents: write
+#
+# See scripts/README.md for the full list of gates and options.
+
+on:
+  workflow_call:
+    inputs:
+      min-age-days:
+        description: Minimum age of the previous release before a new one is cut.
+        type: number
+        default: 7
+      settle-hours:
+        description: Minimum age of the newest unreleased commit, so a release is never cut minutes after a merge.
+        type: number
+        default: 1
+      bump:
+        description: "Version bump to apply: minor, major or auto."
+        type: string
+        default: minor
+      exclude-paths:
+        description: Space-separated path prefixes whose commits alone never trigger a release.
+        type: string
+        default: ""
+      skip-bot-commits:
+        description: Ignore bot-authored commits when deciding whether to release.
+        type: boolean
+        default: true
+      allow-red-checks:
+        description: Release even when the head commit's checks are failing or pending.
+        type: boolean
+        default: false
+      dry-run:
+        description: Report the decision without creating a release.
+        type: boolean
+        default: false
+      environment:
+        description: Optional environment (use one with required reviewers to gate releases on approval).
+        type: string
+        default: ""
+    secrets:
+      release-token:
+        description: Token used to create the release. Defaults to the caller's GITHUB_TOKEN.
+        required: false
+    outputs:
+      released:
+        description: "true when a release was created."
+        value: ${{ jobs.release.outputs.released }}
+      tag:
+        description: The tag that was created (or would be created on a dry run).
+        value: ${{ jobs.release.outputs.tag }}
+      reason:
+        description: Human-readable explanation of the decision.
+        value: ${{ jobs.release.outputs.reason }}
+
+  workflow_dispatch:
+    inputs:
+      min-age-days:
+        description: Minimum age of the previous release before a new one is cut.
+        type: number
+        default: 7
+      settle-hours:
+        description: Minimum age of the newest unreleased commit.
+        type: number
+        default: 1
+      bump:
+        description: Version bump to apply.
+        type: choice
+        options: [minor, major, auto]
+        default: minor
+      exclude-paths:
+        description: Space-separated path prefixes whose commits alone never trigger a release.
+        type: string
+        default: ""
+      skip-bot-commits:
+        description: Ignore bot-authored commits when deciding whether to release.
+        type: boolean
+        default: true
+      allow-red-checks:
+        description: Release even when the head commit's checks are failing or pending.
+        type: boolean
+        default: false
+      dry-run:
+        description: Report the decision without creating a release.
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    concurrency:
+      group: auto-release-${{ github.repository }}
+      cancel-in-progress: false
+
+    outputs:
+      released: ${{ steps.auto-release.outputs.released }}
+      tag: ${{ steps.auto-release.outputs.tag }}
+      reason: ${{ steps.auto-release.outputs.reason }}
+
+    steps:
+      # The helper lives in the profile repository, so check that out rather
+      # than the caller: the decision only needs the GitHub API.
+      - name: Check out release tooling
+        uses: actions/checkout@v4
+        with:
+          repository: charles2ke/charles2ke
+          path: .auto-release
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Decide and cut the release
+        id: auto-release
+        env:
+          RELEASE_TOKEN: ${{ secrets.release-token || github.token }}
+          TARGET_REPOSITORY: ${{ github.repository }}
+          MIN_AGE_DAYS: ${{ inputs.min-age-days }}
+          SETTLE_HOURS: ${{ inputs.settle-hours }}
+          BUMP: ${{ inputs.bump }}
+          EXCLUDE_PATHS: ${{ inputs.exclude-paths }}
+          SKIP_BOT_COMMITS: ${{ inputs.skip-bot-commits }}
+          ALLOW_RED_CHECKS: ${{ inputs.allow-red-checks }}
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          set -euo pipefail
+
+          args=(
+            --repository "$TARGET_REPOSITORY"
+            --min-age-days "${MIN_AGE_DAYS:-7}"
+            --settle-hours "${SETTLE_HOURS:-1}"
+            --bump "${BUMP:-minor}"
+          )
+
+          for path in ${EXCLUDE_PATHS:-}; do
+            args+=(--exclude-path "$path")
+          done
+
+          if [ "${SKIP_BOT_COMMITS:-true}" = "true" ]; then
+            args+=(--skip-bot-commits)
+          fi
+          if [ "${ALLOW_RED_CHECKS:-false}" = "true" ]; then
+            args+=(--allow-red-checks)
+          fi
+          if [ "${DRY_RUN:-false}" = "true" ]; then
+            args+=(--dry-run)
+          fi
+
+          python .auto-release/scripts/auto_release.py "${args[@]}"

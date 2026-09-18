@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import datetime as dt
 import json
 import sys
 import tempfile
@@ -18,6 +19,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scripts.collect_failures import (
     GitHubAPIError,
     build_snapshot,
+    drift_age_days,
+    fetch_release_drift,
     main,
     summarise_failure,
     unresolved_failures,
@@ -184,6 +187,135 @@ class TestBuildSnapshot(unittest.TestCase):
 
             payload = json.loads(output.read_text(encoding="utf-8"))
             self.assertEqual(2, payload["failure_count"])
+
+
+class TestReleaseDrift(unittest.TestCase):
+    release: ClassVar[dict] = {
+        "tag_name": "v1.1",
+        "html_url": "https://github.com/charles2ke/demo/releases/tag/v1.1",
+        "published_at": "2026-08-30T08:00:00Z",
+        "target_commitish": "main",
+    }
+    head: ClassVar[list[dict]] = [
+        {"commit": {"committer": {"date": "2026-09-10T08:00:00Z"}}},
+    ]
+
+    def test_reports_commits_after_the_latest_release(self):
+        responses = [self.release, self.head, {"ahead_by": 12}]
+        with patch("scripts.collect_failures._request", side_effect=responses) as request:
+            drift = fetch_release_drift("charles2ke/demo", "trunk", None)
+
+        self.assertEqual("v1.1", drift["latest_tag"])
+        self.assertEqual(12, drift["commits_since"])
+        self.assertEqual("2026-09-10T08:00:00Z", drift["last_commit_at"])
+        self.assertIn("v1.1...trunk", request.call_args_list[2].args[0])
+
+    def test_ignores_repositories_already_released(self):
+        responses = [self.release, self.head, {"ahead_by": 0}]
+        with patch("scripts.collect_failures._request", side_effect=responses):
+            self.assertIsNone(fetch_release_drift("charles2ke/demo", "trunk", None))
+
+    def test_never_released_repository_is_drift(self):
+        error = GitHubAPIError("GitHub API request failed: 404 Not Found")
+        commits = self.head + [{"sha": "older"}]
+        with patch("scripts.collect_failures._request", side_effect=[error, commits]):
+            drift = fetch_release_drift("charles2ke/demo", "trunk", None)
+
+        self.assertEqual("", drift["latest_tag"])
+        self.assertEqual(2, drift["commits_since"])
+
+    def test_counts_paginated_history_without_a_release(self):
+        error = GitHubAPIError("GitHub API request failed: 404 Not Found")
+        first_page = self.head + [{"sha": str(index)} for index in range(99)]
+        with patch(
+            "scripts.collect_failures._request",
+            side_effect=[error, first_page, [{"sha": "oldest"}]],
+        ):
+            drift = fetch_release_drift("charles2ke/demo", "trunk", None)
+
+        self.assertEqual(101, drift["commits_since"])
+
+    def test_empty_repository_is_not_drift(self):
+        error = GitHubAPIError("GitHub API request failed: 404 Not Found")
+        with patch("scripts.collect_failures._request", side_effect=[error, []]):
+            self.assertIsNone(fetch_release_drift("charles2ke/demo", "trunk", None))
+
+    def test_other_api_errors_are_raised(self):
+        error = GitHubAPIError("GitHub API request failed: 502 Bad Gateway")
+        with (
+            patch("scripts.collect_failures._request", side_effect=error),
+            self.assertRaises(GitHubAPIError),
+        ):
+            fetch_release_drift("charles2ke/demo", "trunk", None)
+
+    def test_age_is_measured_from_the_last_release(self):
+        now = dt.datetime(2026, 9, 17, 8, 0, tzinfo=dt.timezone.utc)
+        drift = {"released_at": "2026-09-10T08:00:00Z", "last_commit_at": "2026-09-16T08:00:00Z"}
+        self.assertEqual(7.0, drift_age_days(drift, now))
+
+    def test_age_falls_back_to_the_last_commit(self):
+        now = dt.datetime(2026, 9, 17, 8, 0, tzinfo=dt.timezone.utc)
+        drift = {"released_at": "", "last_commit_at": "2026-09-15T08:00:00Z"}
+        self.assertEqual(2.0, drift_age_days(drift, now))
+
+
+class TestSnapshotDrift(unittest.TestCase):
+    repositories: ClassVar[list[dict]] = [
+        {
+            "name": "stale",
+            "full_name": "charles2ke/stale",
+            "html_url": "https://github.com/charles2ke/stale",
+        },
+        {
+            "name": "fresh",
+            "full_name": "charles2ke/fresh",
+            "html_url": "https://github.com/charles2ke/fresh",
+        },
+    ]
+
+    def _snapshot(self, drift_days):
+        drifts = {
+            "charles2ke/stale": {
+                "latest_tag": "v1.1",
+                "release_url": "",
+                "released_at": "2026-01-01T00:00:00Z",
+                "commits_since": 9,
+                "last_commit_at": "2026-01-02T00:00:00Z",
+            },
+            "charles2ke/fresh": None,
+        }
+        with (
+            patch("scripts.collect_failures.fetch_repositories", return_value=self.repositories),
+            patch("scripts.collect_failures.fetch_runs", return_value=[]),
+            patch(
+                "scripts.collect_failures.fetch_release_drift",
+                side_effect=lambda full_name, default_branch, token: drifts[full_name],
+            ),
+        ):
+            return build_snapshot("charles2ke", None, drift_days)
+
+    def test_lists_only_repositories_past_the_threshold(self):
+        snapshot = self._snapshot(7)
+        self.assertEqual(1, snapshot["release_drift_count"])
+        self.assertEqual("charles2ke/stale", snapshot["releases"][0]["full_name"])
+        self.assertEqual(9, snapshot["releases"][0]["commits_since"])
+
+    def test_drift_collection_is_optional(self):
+        snapshot = self._snapshot(None)
+        self.assertEqual([], snapshot["releases"])
+        self.assertEqual(0, snapshot["release_drift_count"])
+
+    def test_drift_errors_degrade_instead_of_aborting(self):
+        error = GitHubAPIError("GitHub API request failed: 502 Bad Gateway")
+        with (
+            patch("scripts.collect_failures.fetch_repositories", return_value=self.repositories),
+            patch("scripts.collect_failures.fetch_runs", return_value=[]),
+            patch("scripts.collect_failures.fetch_release_drift", side_effect=error),
+        ):
+            snapshot = build_snapshot("charles2ke", None, 7)
+
+        self.assertTrue(snapshot["degraded"])
+        self.assertEqual([], snapshot["releases"])
 
 
 class TestFetchRepositories(unittest.TestCase):

@@ -256,3 +256,53 @@ a {
   border-top: 1px solid var(--border);
   font-size: 0.85rem;
 }
+
+.drift {
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.drift-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: baseline;
+  padding: 0.6rem 0.85rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.drift-header h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.drift-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.drift-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.75rem;
+  align-items: center;
+  padding: 0.55rem 0.85rem;
+}
+
+.drift-item + .drift-item {
+  border-top: 1px solid var(--border);
+}
+
+.drift-meta {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.drift-release {
+  margin-left: auto;
+  font-size: 0.85rem;
+}
