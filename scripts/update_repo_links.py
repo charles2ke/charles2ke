@@ -27,6 +27,7 @@ DEFAULT_BADGES = ("Software Engineering", "Hands-on learning and experimentation
 REPO_BADGES: dict[str, tuple[str, str]] = {
     "5-mins": ("Disaster Alerts", "Early warning awareness"),
     "advantage": ("Insurance", "One-stop policy management"),
+    "aero": ("Aerospace Engineering", "Applied flight fundamentals"),
     "agent-chaos-monkey": ("Reliability Engineering", "Safer agent failure recovery"),
     "baby-model": ("Private AI", "Grounded personal answers"),
     "basa": ("Elder Care", "Coordinated caregiving"),
@@ -34,6 +35,7 @@ REPO_BADGES: dict[str, tuple[str, str]] = {
     "design-patterns": ("Software Design", "Reusable design knowledge"),
     "gitdb": ("Data Storage", "Git-backed persistence"),
     "graphql": ("API Engineering", "Flexible data access"),
+    "jarvis": ("Personal AI", "Always-on personal companion"),
     "message-flow": ("Software Design", "Decoupled message handling"),
     "nakshatra": ("E-Commerce", "Streamlined online shopping"),
     "night-sky": ("Astronomy Visualisation", "Accurate sky reconstruction"),
@@ -42,6 +44,7 @@ REPO_BADGES: dict[str, tuple[str, str]] = {
     "portfolio-watcher": ("Personal Finance", "Unified portfolio view"),
     "social": ("Social Media", "Coordinated audience engagement"),
     "tax-break": ("Taxation", "Simplified tax filing"),
+    "tito": ("Team Coordination", "Together in, together out"),
     "titoos": ("Agent Platforms", "Purpose-built agent runtime"),
     "travel": ("Travel", "Easier trip discovery"),
     "workout": ("Health and Fitness", "Consistent training habits"),
