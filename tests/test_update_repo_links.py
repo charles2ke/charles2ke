@@ -175,6 +175,40 @@ class TestNewRepoBadgeMappings(unittest.TestCase):
             self.assertIn(f'alt="Value: {value}"', result)
 
 
+class TestLatestRepoBadgeMappings(unittest.TestCase):
+    """Guards the badge mappings added for aero, jarvis and tito."""
+
+    EXPECTED: ClassVar[dict[str, tuple[str, str]]] = {
+        "aero": ("Aerospace Engineering", "Applied flight fundamentals"),
+        "jarvis": ("Personal AI", "Always-on personal companion"),
+        "tito": ("Team Coordination", "Together in, together out"),
+    }
+
+    def test_mappings_are_registered(self):
+        for key, expected in self.EXPECTED.items():
+            with self.subTest(repo=key):
+                self.assertEqual(REPO_BADGES.get(key), expected)
+
+    def test_badges_do_not_fall_back_to_defaults(self):
+        for key in self.EXPECTED:
+            with self.subTest(repo=key):
+                badges = build_badges(key)
+                self.assertNotIn(f'alt="Field: {DEFAULT_BADGES[0]}"', badges)
+                self.assertNotIn(f'alt="Value: {DEFAULT_BADGES[1]}"', badges)
+
+    def test_tito_and_titoos_have_distinct_badges(self):
+        self.assertNotEqual(build_badges("tito"), build_badges("TitoOS"))
+
+    def test_readme_lists_every_mapped_repository(self):
+        readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(
+            encoding="utf-8"
+        )
+        section = readme.split(SECTION_START)[1].split(SECTION_END)[0]
+        for name in ("aero", "jarvis", "tito"):
+            with self.subTest(repo=name):
+                self.assertIn(f"https://github.com/charles2ke/{name})", section)
+
+
 class TestUpdateReadme(unittest.TestCase):
     def _make_readme(self, body: str) -> str:
         return textwrap.dedent(f"""\
