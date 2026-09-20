@@ -16,13 +16,19 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts.update_repo_links import (
     DEFAULT_BADGES,
+    NO_DESCRIPTION,
     PROFILE_REPO,
     REPO_BADGES,
+    REPO_SUMMARIES,
     SECTION_END,
     SECTION_START,
+    SUMMARY_FALLBACK,
+    SUMMARY_MAX_LENGTH,
+    SUMMARY_PREFIX,
     _badge,
     build_badges,
     build_repo_lines,
+    build_summary,
     update_readme,
 )
 
@@ -207,6 +213,84 @@ class TestLatestRepoBadgeMappings(unittest.TestCase):
         for name in ("aero", "jarvis", "tito"):
             with self.subTest(repo=name):
                 self.assertIn(f"https://github.com/charles2ke/{name})", section)
+
+
+class TestBuildSummary(unittest.TestCase):
+    def test_curated_summary_is_used_for_known_repo(self):
+        self.assertEqual(
+            build_summary("workout", "My weekly workout plan"),
+            REPO_SUMMARIES["workout"],
+        )
+
+    def test_lookup_is_case_insensitive(self):
+        self.assertEqual(build_summary("TitoOS", "x"), REPO_SUMMARIES["titoos"])
+
+    def test_unknown_repo_falls_back_to_description(self):
+        self.assertEqual(
+            build_summary("unlisted-repo", "  Does   something   useful "),
+            "Does something useful",
+        )
+
+    def test_missing_description_uses_generic_fallback(self):
+        self.assertEqual(build_summary("unlisted-repo", NO_DESCRIPTION), SUMMARY_FALLBACK)
+        self.assertEqual(build_summary("unlisted-repo", "   "), SUMMARY_FALLBACK)
+
+    def test_long_description_is_shortened_on_a_word_boundary(self):
+        description = "word " * 100
+        summary = build_summary("unlisted-repo", description)
+        self.assertLessEqual(len(summary), SUMMARY_MAX_LENGTH)
+        self.assertTrue(summary.endswith("…"))
+        self.assertNotIn(" …", summary)
+
+    def test_every_badged_repo_has_a_curated_summary(self):
+        self.assertEqual(set(REPO_SUMMARIES), set(REPO_BADGES))
+
+    def test_summaries_are_single_line_and_non_empty(self):
+        for name, summary in REPO_SUMMARIES.items():
+            with self.subTest(repo=name):
+                self.assertTrue(summary.strip())
+                self.assertNotIn("\n", summary)
+                self.assertNotIn("_", summary)
+
+
+class TestSummaryRendering(unittest.TestCase):
+    def _repo(self, name: str, description: str = "Desc"):
+        return {
+            "full_name": f"charles2ke/{name}",
+            "name": name,
+            "html_url": f"https://github.com/charles2ke/{name}",
+            "fork": False,
+            "description": description,
+        }
+
+    def test_summary_line_follows_the_badges(self):
+        result = build_repo_lines([self._repo("workout", "My weekly workout plan")])
+        lines = result.splitlines()
+        self.assertEqual(len(lines), 3)
+        self.assertIn("img alt=\"Field:", lines[1])
+        self.assertEqual(lines[2].strip(), f"_{SUMMARY_PREFIX} {REPO_SUMMARIES['workout']}_")
+
+    def test_summary_is_indented_to_match_the_list_marker(self):
+        repos = [self._repo(f"repo{index}") for index in range(1, 3)]
+        result = build_repo_lines(repos)
+        for line in result.splitlines():
+            if SUMMARY_PREFIX in line:
+                self.assertTrue(line.startswith("   "))
+
+    def test_badge_line_keeps_a_hard_line_break(self):
+        result = build_repo_lines([self._repo("workout")])
+        self.assertTrue(result.splitlines()[1].endswith("  "))
+
+    def test_unmapped_repo_renders_description_derived_summary(self):
+        result = build_repo_lines([self._repo("unlisted-repo", "Something neat")])
+        self.assertIn(f"_{SUMMARY_PREFIX} Something neat_", result)
+
+    def test_readme_has_a_summary_for_every_listed_repository(self):
+        readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(encoding="utf-8")
+        section = readme.split(SECTION_START)[1].split(SECTION_END)[0]
+        entries = re.findall(r"^\s*\d+\. \[", section, re.MULTILINE)
+        summaries = re.findall(rf"^\s*_{SUMMARY_PREFIX} .+_$", section, re.MULTILINE)
+        self.assertEqual(len(entries), len(summaries))
 
 
 class TestUpdateReadme(unittest.TestCase):
