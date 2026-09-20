@@ -179,12 +179,13 @@ def build_repo_lines(repositories: list[dict[str, object]]) -> str:
     if not entries:
         return "1. No repositories to show yet."
 
+    markdown_pattern = re.compile(r"([\\`*_{}\[\]<>()#|~])")
     lines = []
     for position, (name, line, badges, summary) in enumerate(entries, start=1):
         marker = f"{position}. "
         indent = " " * len(marker)
         if name.casefold() not in REPO_SUMMARIES:
-            summary = re.sub(r"([\\`*_{}\[\]<>()#|~])", r"\\\1", summary)
+            summary = markdown_pattern.sub(r"\\\1", summary)
         lines.append(
             f"{marker}{line} \n{indent}{badges}  \n{indent}_{SUMMARY_PREFIX} {summary}_"
         )
