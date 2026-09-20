@@ -91,7 +91,8 @@ def _shorten(text: str, limit: int = SUMMARY_MAX_LENGTH) -> str:
     if len(text) <= limit:
         return text
 
-    trimmed = text[: limit - 1].rsplit(" ", 1)[0].rstrip(" ,;:-")
+    prefix = text[: limit - 1]
+    trimmed = prefix.rsplit(" ", 1)[0].rstrip(" ,;:-") or prefix
     return f"{trimmed}…"
 
 

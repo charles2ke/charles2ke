@@ -242,6 +242,11 @@ class TestBuildSummary(unittest.TestCase):
         self.assertTrue(summary.endswith("…"))
         self.assertNotIn(" …", summary)
 
+    def test_long_description_without_spaces_preserves_prefix(self):
+        description = "-" * (SUMMARY_MAX_LENGTH + 20)
+        summary = build_summary("unlisted-repo", description)
+        self.assertEqual(summary, f"{description[: SUMMARY_MAX_LENGTH - 1]}…")
+
     def test_every_badged_repo_has_a_curated_summary(self):
         self.assertEqual(set(REPO_SUMMARIES), set(REPO_BADGES))
 
