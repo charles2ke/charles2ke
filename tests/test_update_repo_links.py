@@ -290,6 +290,10 @@ class TestSummaryRendering(unittest.TestCase):
         result = build_repo_lines([self._repo("unlisted-repo", "Something neat")])
         self.assertIn(f"_{SUMMARY_PREFIX} Something neat_", result)
 
+    def test_unmapped_repo_escapes_markdown_in_summary(self):
+        result = build_repo_lines([self._repo("unlisted-repo", "Uses *fast* [tools]")])
+        self.assertIn(r"_🧠 Uses \*fast\* \[tools\]_", result)
+
     def test_readme_has_a_summary_for_every_listed_repository(self):
         readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(encoding="utf-8")
         section = readme.split(SECTION_START)[1].split(SECTION_END)[0]

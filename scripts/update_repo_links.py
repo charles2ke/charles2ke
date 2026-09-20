@@ -183,6 +183,7 @@ def build_repo_lines(repositories: list[dict[str, object]]) -> str:
     for position, (_, line, badges, summary) in enumerate(entries, start=1):
         marker = f"{position}. "
         indent = " " * len(marker)
+        summary = re.sub(r"([\\`*_\[\]])", r"\\\1", summary)
         lines.append(
             f"{marker}{line} \n{indent}{badges}  \n{indent}_{SUMMARY_PREFIX} {summary}_"
         )
