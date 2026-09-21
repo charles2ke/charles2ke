@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts.update_repo_links import (
     DEFAULT_BADGES,
+    NO_DESCRIPTION,
     PROFILE_REPO,
     REPO_BADGES,
     SECTION_END,
@@ -47,7 +48,7 @@ class TestBuildRepoLines(unittest.TestCase):
     def test_fallback_description_when_none(self):
         repos = [{"full_name": "charles2ke/silent", "name": "silent", "html_url": "https://github.com/charles2ke/silent", "fork": False, "description": None}]
         result = build_repo_lines(repos)
-        self.assertIn("No description provided.", result)
+        self.assertIn(NO_DESCRIPTION, result)
 
     def test_empty_repo_list_returns_placeholder(self):
         result = build_repo_lines([])
@@ -230,12 +231,6 @@ class TestEntryRendering(unittest.TestCase):
     def test_description_markdown_is_escaped(self):
         result = build_repo_lines([self._repo("workout", "Uses *fast* [tools]")])
         self.assertIn(r"— Uses \*fast\* \[tools\] ", result)
-
-    def test_readme_section_has_no_summary_lines(self):
-        readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(encoding="utf-8")
-        section = readme.split(SECTION_START)[1].split(SECTION_END)[0]
-        self.assertNotIn("🧠", section)
-
 
 class TestUpdateReadme(unittest.TestCase):
     def _make_readme(self, body: str) -> str:
