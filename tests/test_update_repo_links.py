@@ -232,6 +232,7 @@ class TestEntryRendering(unittest.TestCase):
         result = build_repo_lines([self._repo("workout", "Uses *fast* [tools]")])
         self.assertIn(r"— Uses \*fast\* \[tools\] ", result)
 
+
 class TestUpdateReadme(unittest.TestCase):
     def _make_readme(self, body: str) -> str:
         return textwrap.dedent(f"""\
