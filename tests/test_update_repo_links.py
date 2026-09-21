@@ -398,5 +398,41 @@ class TestFetchRepositories(unittest.TestCase):
         self.assertEqual(repos[0]["name"], "repo-one")
 
 
+class TestPairedTradingSummaries(unittest.TestCase):
+    """Guards the cross-references between OpenTrading and Portfolio-Watcher."""
+
+    def test_opentrading_summary_names_portfolio_watcher(self):
+        self.assertIn("Portfolio-Watcher", REPO_SUMMARIES["opentrading"])
+
+    def test_portfolio_watcher_summary_names_opentrading(self):
+        self.assertIn("OpenTrading", REPO_SUMMARIES["portfolio-watcher"])
+
+    def test_build_summary_returns_curated_pairing(self):
+        for name in ("OpenTrading", "Portfolio-Watcher"):
+            with self.subTest(repo=name):
+                self.assertEqual(
+                    build_summary(name, "Some GitHub description"),
+                    REPO_SUMMARIES[name.casefold()],
+                )
+
+    def test_readme_section_shows_both_pairing_summaries(self):
+        readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(
+            encoding="utf-8"
+        )
+        section = readme.split(SECTION_START)[1].split(SECTION_END)[0]
+        entries = {
+            match.group("name").casefold(): match.group("entry")
+            for match in re.finditer(
+                r"(?:^|\n)(?P<entry>\d+\. \[(?P<name>[^\]]+)\]\([^)]+\).*?)(?=\n\d+\. \[|\Z)",
+                section,
+                flags=re.DOTALL,
+            )
+        }
+        for name in ("opentrading", "portfolio-watcher"):
+            with self.subTest(repo=name):
+                self.assertIn(name, entries)
+                self.assertIn(REPO_SUMMARIES[name], entries[name])
+
+
 if __name__ == "__main__":
     unittest.main()
