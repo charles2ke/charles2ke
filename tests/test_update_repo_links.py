@@ -420,9 +420,18 @@ class TestPairedTradingSummaries(unittest.TestCase):
             encoding="utf-8"
         )
         section = readme.split(SECTION_START)[1].split(SECTION_END)[0]
+        entries = {
+            match.group("name").casefold(): match.group("entry")
+            for match in re.finditer(
+                r"(?:^|\n)(?P<entry>\d+\. \[(?P<name>[^\]]+)\]\([^)]+\).*?)(?=\n\d+\. \[|\Z)",
+                section,
+                flags=re.DOTALL,
+            )
+        }
         for name in ("opentrading", "portfolio-watcher"):
             with self.subTest(repo=name):
-                self.assertIn(REPO_SUMMARIES[name], section)
+                self.assertIn(name, entries)
+                self.assertIn(REPO_SUMMARIES[name], entries[name])
 
 
 if __name__ == "__main__":
