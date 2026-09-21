@@ -15,6 +15,7 @@ from __future__ import annotations
 import ipaddress
 import re
 import socket
+import time
 import unittest
 import urllib.error
 import urllib.parse
@@ -42,6 +43,11 @@ REQUEST_TIMEOUT = 20
 # 429 and 999 responses that sites such as LinkedIn return to automated
 # clients) means the target exists.
 BROKEN_STATUSES = frozenset({404, 410})
+# The Pages site is redeployed every few minutes, and a request made while a
+# deployment is being swapped in can briefly 404. Confirm such a response with
+# a few spaced-out retries so only genuinely dead links fail the suite.
+BROKEN_RETRIES = 3
+BROKEN_RETRY_DELAY = 5.0
 
 
 def markdown_files() -> list[Path]:
@@ -136,6 +142,19 @@ def _status_code(url: str) -> int | None:
             return None
 
     return None
+
+
+def _live_status(url: str) -> int | None:
+    """Return the status for ``url``, re-checking responses that look broken."""
+    status = _status_code(url)
+
+    for _ in range(BROKEN_RETRIES):
+        if status not in BROKEN_STATUSES:
+            break
+        time.sleep(BROKEN_RETRY_DELAY)
+        status = _status_code(url)
+
+    return status
 
 
 class TestLinkStructure(unittest.TestCase):
@@ -275,7 +294,7 @@ class TestLinksAreReachable(unittest.TestCase):
         urls = self._checkable_urls()
 
         with ThreadPoolExecutor(max_workers=8) as pool:
-            statuses = list(pool.map(_status_code, urls))
+            statuses = list(pool.map(_live_status, urls))
 
         broken = [
             f"{url} -> {status}"
@@ -289,7 +308,7 @@ class TestLinksAreReachable(unittest.TestCase):
         if urllib.parse.urlsplit(url).netloc not in self.hosts:
             self.skipTest("GitHub Pages host is not reachable")
 
-        status = _status_code(url)
+        status = _live_status(url)
         self.assertIsNotNone(
             status,
             f"{url} could not be reached; check the 'Deploy to GitHub Pages' workflow",
@@ -299,6 +318,38 @@ class TestLinksAreReachable(unittest.TestCase):
             BROKEN_STATUSES,
             f"{url} is not published; check the 'Deploy to GitHub Pages' workflow",
         )
+
+
+class TestTransientBrokenStatuses(unittest.TestCase):
+    """A single 404 during a Pages deployment must not fail the suite."""
+
+    def test_transient_broken_status_is_rechecked(self):
+        with patch("tests.test_readme_links.time.sleep"), patch(
+            "tests.test_readme_links._status_code", side_effect=[404, 200]
+        ):
+            self.assertEqual(200, _live_status("https://example.com/"))
+
+    def test_persistently_broken_status_is_reported(self):
+        statuses = [404] * (BROKEN_RETRIES + 1)
+        with patch("tests.test_readme_links.time.sleep"), patch(
+            "tests.test_readme_links._status_code", side_effect=statuses
+        ) as status_code:
+            self.assertEqual(404, _live_status("https://example.com/"))
+        self.assertEqual(len(statuses), status_code.call_count)
+
+    def test_healthy_link_is_fetched_once(self):
+        with patch(
+            "tests.test_readme_links._status_code", return_value=200
+        ) as status_code:
+            self.assertEqual(200, _live_status("https://example.com/"))
+        self.assertEqual(1, status_code.call_count)
+
+    def test_unreachable_link_is_not_retried(self):
+        with patch(
+            "tests.test_readme_links._status_code", return_value=None
+        ) as status_code:
+            self.assertIsNone(_live_status("https://example.com/"))
+        self.assertEqual(1, status_code.call_count)
 
 
 class TestReachabilitySafety(unittest.TestCase):
