@@ -227,9 +227,9 @@ class TestEntryRendering(unittest.TestCase):
         self.assertIn("My weekly workout plan", lines[0])
         self.assertIn('img alt="Field:', lines[1])
 
-    def test_no_curated_summary_line_is_rendered(self):
-        result = build_repo_lines([self._repo("workout"), self._repo("unlisted-repo")])
-        self.assertNotIn("🧠", result)
+    def test_description_markdown_is_escaped(self):
+        result = build_repo_lines([self._repo("workout", "Uses *fast* [tools]")])
+        self.assertIn(r"— Uses \*fast\* \[tools\] ", result)
 
     def test_readme_section_has_no_summary_lines(self):
         readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(encoding="utf-8")

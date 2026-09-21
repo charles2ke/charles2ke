@@ -52,6 +52,7 @@ REPO_BADGES: dict[str, tuple[str, str]] = {
     "x-big-brother": ("Digital Privacy", "Control over personal data"),
 }
 
+
 def _badge(label: str, message: str, color: str) -> str:
     def encode(value: str) -> str:
         return urllib.parse.quote(value.replace("-", "--").replace("_", "__"), safe="")
