@@ -68,13 +68,13 @@
     _🧠 Reconstructs the night sky for any date and location in a consistent panoramic style._
 15. [OpenTrading](https://github.com/charles2ke/OpenTrading) — Trading Platform to buy and sell stocks on different exchanges around the world 
     <img alt="Field: FinTech" src="https://img.shields.io/badge/Field-FinTech-0A66C2?style=flat-square"> <img alt="Value: Global trade execution" src="https://img.shields.io/badge/Value-Global%20trade%20execution-2EA043?style=flat-square">  
-    _🧠 A trading platform for buying and selling stocks across exchanges worldwide._
+    _🧠 A trading platform for buying and selling stocks across exchanges worldwide, paired with Portfolio-Watcher for watching the same symbols._
 16. [platform-shared](https://github.com/charles2ke/platform-shared) — Shared platform services for auth, profile, and notifications across social, travel, workout, and basa 
     <img alt="Field: Platform Engineering" src="https://img.shields.io/badge/Field-Platform%20Engineering-0A66C2?style=flat-square"> <img alt="Value: Reusable shared services" src="https://img.shields.io/badge/Value-Reusable%20shared%20services-2EA043?style=flat-square">  
     _🧠 Shared auth, profile and notification services reused by social, travel, workout and basa._
 17. [Portfolio-Watcher](https://github.com/charles2ke/Portfolio-Watcher) — Take care of all your Financial Portfolio in one place 
     <img alt="Field: Personal Finance" src="https://img.shields.io/badge/Field-Personal%20Finance-0A66C2?style=flat-square"> <img alt="Value: Unified portfolio view" src="https://img.shields.io/badge/Value-Unified%20portfolio%20view-2EA043?style=flat-square">  
-    _🧠 Gathers every financial account into one place so the whole portfolio is visible at a glance._
+    _🧠 Gathers every financial account into one place so the whole portfolio is visible at a glance — the watchlist and alerting companion to OpenTrading._
 18. [social](https://github.com/charles2ke/social) — Social Media Manager 
     <img alt="Field: Social Media" src="https://img.shields.io/badge/Field-Social%20Media-0A66C2?style=flat-square"> <img alt="Value: Coordinated audience engagement" src="https://img.shields.io/badge/Value-Coordinated%20audience%20engagement-2EA043?style=flat-square">  
     _🧠 A social media manager for planning and coordinating posts across audiences._
