@@ -209,6 +209,13 @@ class TestLatestRepoBadgeMappings(unittest.TestCase):
             with self.subTest(repo=name):
                 self.assertIn(f"https://github.com/charles2ke/{name})", section)
 
+    def test_readme_section_has_no_curated_summary_line(self):
+        readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(
+            encoding="utf-8"
+        )
+        section = readme.split(SECTION_START)[1].split(SECTION_END)[0]
+        self.assertNotIn("🧠", section)
+
 
 class TestEntryRendering(unittest.TestCase):
     def _repo(self, name: str, description: str = "Desc"):
