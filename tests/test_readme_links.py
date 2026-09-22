@@ -336,12 +336,14 @@ class TestLinksAreReachable(unittest.TestCase):
             self.skipTest("GitHub Pages host is not reachable")
 
         status = _live_status(url)
+        if (
+            status is None or status in BROKEN_STATUSES
+        ) and not _pages_site_is_serving():
+            self.skipTest("the GitHub Pages site is not being served right now")
         self.assertIsNotNone(
             status,
             f"{url} could not be reached; check the 'Deploy to GitHub Pages' workflow",
         )
-        if status in BROKEN_STATUSES and not _pages_site_is_serving():
-            self.skipTest("the GitHub Pages site is not being served right now")
         self.assertNotIn(
             status,
             BROKEN_STATUSES,
@@ -450,6 +452,14 @@ class TestReachabilityDecisions(unittest.TestCase):
 
         with patch(
             "tests.test_readme_links._live_status", return_value=404
+        ), self.assertRaises(unittest.SkipTest):
+            checker.test_failure_dashboard_is_published()
+
+    def test_dashboard_check_skips_when_the_site_is_unreachable(self):
+        checker = self._checker({PAGES_HOST})
+
+        with patch(
+            "tests.test_readme_links._live_status", return_value=None
         ), self.assertRaises(unittest.SkipTest):
             checker.test_failure_dashboard_is_published()
 
