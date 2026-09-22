@@ -401,6 +401,70 @@ class TestPagesSiteAvailability(unittest.TestCase):
         self.assertFalse(_is_pages_url("https://example.com/failures.html"))
 
 
+class TestReachabilityDecisions(unittest.TestCase):
+    """The consumers of `_pages_site_is_serving` must gate on it correctly.
+
+    These build a `TestLinksAreReachable` instance without running its
+    network-probing `setUpClass`, so the decision branches inside
+    `test_links_are_not_dead` and `test_failure_dashboard_is_published` can be
+    exercised directly against mocked reachability results.
+    """
+
+    @staticmethod
+    def _checker(hosts, urls=()):
+        checker = TestLinksAreReachable("test_links_are_not_dead")
+        checker.hosts = hosts
+        checker.urls = list(urls)
+        return checker
+
+    def test_broken_pages_link_passes_during_a_site_outage(self):
+        url = f"{PAGES_BASE_URL}failures.html"
+        checker = self._checker({PAGES_HOST}, [url])
+
+        with patch("tests.test_readme_links._live_status", return_value=404):
+            checker.test_links_are_not_dead()  # must not raise
+
+    def test_broken_pages_link_fails_when_the_site_is_live(self):
+        url = f"{PAGES_BASE_URL}failures.html"
+        checker = self._checker({PAGES_HOST}, [url])
+
+        def fake_live_status(target):
+            return 200 if target == PAGES_BASE_URL else 404
+
+        with patch(
+            "tests.test_readme_links._live_status", side_effect=fake_live_status
+        ), self.assertRaises(AssertionError):
+            checker.test_links_are_not_dead()
+
+    def test_broken_external_link_fails_regardless_of_pages_state(self):
+        url = "https://example.com/missing"
+        checker = self._checker({"example.com"}, [url])
+
+        with patch(
+            "tests.test_readme_links._live_status", return_value=404
+        ), self.assertRaises(AssertionError):
+            checker.test_links_are_not_dead()
+
+    def test_dashboard_check_skips_during_a_site_outage(self):
+        checker = self._checker({PAGES_HOST})
+
+        with patch(
+            "tests.test_readme_links._live_status", return_value=404
+        ), self.assertRaises(unittest.SkipTest):
+            checker.test_failure_dashboard_is_published()
+
+    def test_dashboard_check_fails_when_missing_on_a_live_site(self):
+        checker = self._checker({PAGES_HOST})
+
+        def fake_live_status(target):
+            return 200 if target == PAGES_BASE_URL else 404
+
+        with patch(
+            "tests.test_readme_links._live_status", side_effect=fake_live_status
+        ), self.assertRaises(AssertionError):
+            checker.test_failure_dashboard_is_published()
+
+
 class TestReachabilitySafety(unittest.TestCase):
     """Network checks must not probe private CI infrastructure."""
 
