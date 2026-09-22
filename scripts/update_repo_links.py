@@ -129,7 +129,7 @@ def build_repo_lines(repositories: list[dict[str, object]]) -> str:
         marker = f"{position}. "
         indent = " " * len(marker)
         description = markdown_pattern.sub(r"\\\1", description)
-        lines.append(f"{marker}[{name}]({html_url}) — {description} \n{indent}{badges}")
+        lines.append(f"{marker}[{name}]({html_url}) — {description}<br>\n{indent}{badges}")
 
     return "\n".join(lines)
 

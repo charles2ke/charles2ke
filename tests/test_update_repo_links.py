@@ -233,11 +233,12 @@ class TestEntryRendering(unittest.TestCase):
         self.assertEqual(len(lines), 2)
         self.assertTrue(lines[0].startswith("1. [workout]"))
         self.assertIn("My weekly workout plan", lines[0])
+        self.assertTrue(lines[0].endswith("<br>"))
         self.assertIn('img alt="Field:', lines[1])
 
     def test_description_markdown_is_escaped(self):
         result = build_repo_lines([self._repo("workout", "Uses *fast* [tools]")])
-        self.assertIn(r"— Uses \*fast\* \[tools\] ", result)
+        self.assertIn(r"— Uses \*fast\* \[tools\]<br>", result)
 
 
 class TestUpdateReadme(unittest.TestCase):
