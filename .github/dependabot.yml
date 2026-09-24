@@ -1,0 +1,20 @@
+# Weekly package upgrades, managed by scripts/rollout_dependabot.py in
+# charles2ke/charles2ke. Every Sunday Dependabot opens a pull request moving each
+# dependency below to its latest stable release.
+#
+# Re-run the rollout script rather than editing this file by hand: the next
+# rollout replaces it with the configuration rendered from the script.
+
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: sunday
+      time: "07:00"
+      timezone: Etc/UTC
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"

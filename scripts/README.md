@@ -142,6 +142,61 @@ where a release should be approved by a human, point the caller's
 `environment:` input at a GitHub Environment with required reviewers — the
 release job then waits for approval.
 
+## `rollout_dependabot.py`
+
+Keeps every repository on a **weekly Sunday package upgrade**. The upgrading
+itself is done by Dependabot version updates — which move each dependency to
+its latest stable release and open a pull request — so this script is the
+rollout that puts the same `.github/dependabot.yml` in every repository.
+
+For each repository it reads the default branch's file list, detects the
+package managers actually in use (`package.json` → npm, `*.csproj`/`*.sln` →
+nuget, `requirements*.txt`/`pyproject.toml` → pip, `.github/workflows/` →
+github-actions, and so on), and renders a configuration that checks every
+detected ecosystem `weekly` on `sunday`. Vendored directories such as
+`node_modules/` and `vendor/` are ignored, a solution directory wins over the
+project directories it already covers, and each ecosystem's updates are grouped
+into a single pull request. Where Dependabot supports it, `versioning-strategy:
+increase` is set so the manifest itself moves up to the new version.
+
+Repositories that already carry the rendered configuration are left untouched,
+so the script is safe to re-run. The rendered file replaces any hand-written
+`dependabot.yml`, in the same way `set-topics.sh` replaces a repository's topics
+— change the script, not the generated file.
+
+### Usage
+
+Always start with a dry run — it reports what each repository would get and
+writes nothing:
+
+```bash
+python scripts/rollout_dependabot.py --dry-run
+python scripts/rollout_dependabot.py --dry-run travel   # a single repository
+```
+
+Then roll it out for real. By default the script pushes a branch and opens a
+pull request per repository; `--direct` commits straight to the default branch:
+
+```bash
+python scripts/rollout_dependabot.py
+python scripts/rollout_dependabot.py --direct travel
+```
+
+Options: `--owner` (defaults to `charles2ke`), `--branch` (the pull request
+branch, `chore/weekly-dependabot` by default), `--direct`, `--dry-run`, and any
+number of repository names.
+
+The script reads a token from `ROLLOUT_TOKEN` or `GITHUB_TOKEN`. A dry run only
+needs read access; writing needs a token that can push branches and open pull
+requests in the target repositories (the `repo` scope). Every run prints — and,
+in Actions, publishes — a Markdown summary naming each repository, what
+happened and which ecosystems were detected.
+
+The [`Weekly dependency upgrades`](../.github/workflows/dependabot-rollout.yml)
+workflow runs this on a schedule so repositories created later are picked up
+too. Without a `DEPENDABOT_ROLLOUT_TOKEN` secret it can only report the gaps,
+because the built-in `GITHUB_TOKEN` cannot write to other repositories.
+
 ## `collect_failures.py`
 
 Builds the JSON snapshot behind the
