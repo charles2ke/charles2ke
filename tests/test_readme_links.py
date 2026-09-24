@@ -331,6 +331,10 @@ class TestLinksAreReachable(unittest.TestCase):
 
         status = _live_status(url)
         if status is None or status in BROKEN_STATUSES:
+            if _pages_site_is_serving():
+                self.fail(
+                    f"the GitHub Pages dashboard is not reachable: {url} -> {status}"
+                )
             self.skipTest("the GitHub Pages deployment has not published the dashboard yet")
 
 
@@ -444,7 +448,7 @@ class TestReachabilityDecisions(unittest.TestCase):
         ), self.assertRaises(unittest.SkipTest):
             checker.test_failure_dashboard_is_published()
 
-    def test_dashboard_check_skips_when_missing_on_a_live_site(self):
+    def test_dashboard_check_fails_when_missing_on_a_live_site(self):
         checker = self._checker({PAGES_HOST})
 
         def fake_live_status(target):
@@ -452,7 +456,7 @@ class TestReachabilityDecisions(unittest.TestCase):
 
         with patch(
             "tests.test_readme_links._live_status", side_effect=fake_live_status
-        ), self.assertRaises(unittest.SkipTest):
+        ), self.assertRaises(AssertionError):
             checker.test_failure_dashboard_is_published()
 
 
