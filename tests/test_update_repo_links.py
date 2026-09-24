@@ -19,16 +19,11 @@ from scripts.update_repo_links import (
     NO_DESCRIPTION,
     PROFILE_REPO,
     REPO_BADGES,
-    REPO_SUMMARIES,
     SECTION_END,
     SECTION_START,
-    SUMMARY_FALLBACK,
-    SUMMARY_MAX_LENGTH,
-    SUMMARY_PREFIX,
     _badge,
     build_badges,
     build_repo_lines,
-    build_summary,
     update_readme,
 )
 
@@ -53,7 +48,7 @@ class TestBuildRepoLines(unittest.TestCase):
     def test_fallback_description_when_none(self):
         repos = [{"full_name": "charles2ke/silent", "name": "silent", "html_url": "https://github.com/charles2ke/silent", "fork": False, "description": None}]
         result = build_repo_lines(repos)
-        self.assertIn("No description provided.", result)
+        self.assertIn(NO_DESCRIPTION, result)
 
     def test_empty_repo_list_returns_placeholder(self):
         result = build_repo_lines([])
@@ -214,51 +209,15 @@ class TestLatestRepoBadgeMappings(unittest.TestCase):
             with self.subTest(repo=name):
                 self.assertIn(f"https://github.com/charles2ke/{name})", section)
 
-
-class TestBuildSummary(unittest.TestCase):
-    def test_curated_summary_is_used_for_known_repo(self):
-        self.assertEqual(
-            build_summary("workout", "My weekly workout plan"),
-            REPO_SUMMARIES["workout"],
+    def test_readme_section_has_no_curated_summary_line(self):
+        readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(
+            encoding="utf-8"
         )
-
-    def test_lookup_is_case_insensitive(self):
-        self.assertEqual(build_summary("TitoOS", "x"), REPO_SUMMARIES["titoos"])
-
-    def test_unknown_repo_falls_back_to_description(self):
-        self.assertEqual(
-            build_summary("unlisted-repo", "  Does   something   useful "),
-            "Does something useful",
-        )
-
-    def test_missing_description_uses_generic_fallback(self):
-        self.assertEqual(build_summary("unlisted-repo", NO_DESCRIPTION), SUMMARY_FALLBACK)
-        self.assertEqual(build_summary("unlisted-repo", "   "), SUMMARY_FALLBACK)
-
-    def test_long_description_is_shortened_on_a_word_boundary(self):
-        description = "word " * 100
-        summary = build_summary("unlisted-repo", description)
-        self.assertLessEqual(len(summary), SUMMARY_MAX_LENGTH)
-        self.assertTrue(summary.endswith("…"))
-        self.assertNotIn(" …", summary)
-
-    def test_long_description_without_spaces_preserves_prefix(self):
-        description = "-" * (SUMMARY_MAX_LENGTH + 20)
-        summary = build_summary("unlisted-repo", description)
-        self.assertEqual(summary, f"{description[: SUMMARY_MAX_LENGTH - 1]}…")
-
-    def test_every_badged_repo_has_a_curated_summary(self):
-        self.assertEqual(set(REPO_SUMMARIES), set(REPO_BADGES))
-
-    def test_summaries_are_single_line_and_non_empty(self):
-        for name, summary in REPO_SUMMARIES.items():
-            with self.subTest(repo=name):
-                self.assertTrue(summary.strip())
-                self.assertNotIn("\n", summary)
-                self.assertNotIn("_", summary)
+        section = readme.split(SECTION_START)[1].split(SECTION_END)[0]
+        self.assertNotIn("🧠", section)
 
 
-class TestSummaryRendering(unittest.TestCase):
+class TestEntryRendering(unittest.TestCase):
     def _repo(self, name: str, description: str = "Desc"):
         return {
             "full_name": f"charles2ke/{name}",
@@ -268,43 +227,18 @@ class TestSummaryRendering(unittest.TestCase):
             "description": description,
         }
 
-    def test_summary_line_follows_the_badges(self):
+    def test_entry_is_description_and_badges_only(self):
         result = build_repo_lines([self._repo("workout", "My weekly workout plan")])
         lines = result.splitlines()
-        self.assertEqual(len(lines), 3)
-        self.assertIn("img alt=\"Field:", lines[1])
-        self.assertEqual(lines[2].strip(), f"_{SUMMARY_PREFIX} {REPO_SUMMARIES['workout']}_")
+        self.assertEqual(len(lines), 2)
+        self.assertTrue(lines[0].startswith("1. [workout]"))
+        self.assertIn("My weekly workout plan", lines[0])
+        self.assertTrue(lines[0].endswith("<br>"))
+        self.assertIn('img alt="Field:', lines[1])
 
-    def test_summary_is_indented_to_match_the_list_marker(self):
-        repos = [self._repo(f"repo{index}") for index in range(1, 3)]
-        result = build_repo_lines(repos)
-        for line in result.splitlines():
-            if SUMMARY_PREFIX in line:
-                self.assertTrue(line.startswith("   "))
-
-    def test_badge_line_keeps_a_hard_line_break(self):
-        result = build_repo_lines([self._repo("workout")])
-        self.assertTrue(result.splitlines()[1].endswith("  "))
-
-    def test_unmapped_repo_renders_description_derived_summary(self):
-        result = build_repo_lines([self._repo("unlisted-repo", "Something neat")])
-        self.assertIn(f"_{SUMMARY_PREFIX} Something neat_", result)
-
-    def test_unmapped_repo_escapes_markdown_in_summary(self):
-        result = build_repo_lines([self._repo("unlisted-repo", "Uses *fast* [tools] | ~daily~")])
-        self.assertIn(r"_🧠 Uses \*fast\* \[tools\] \| \~daily\~_", result)
-
-    def test_curated_repo_preserves_markdown_in_summary(self):
-        with patch.dict(REPO_SUMMARIES, {"workout": "Uses `weekly` plans"}):
-            result = build_repo_lines([self._repo("workout")])
-        self.assertIn("_🧠 Uses `weekly` plans_", result)
-
-    def test_readme_has_a_summary_for_every_listed_repository(self):
-        readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(encoding="utf-8")
-        section = readme.split(SECTION_START)[1].split(SECTION_END)[0]
-        entries = re.findall(r"^\s*\d+\. \[", section, re.MULTILINE)
-        summaries = re.findall(rf"^\s*_{SUMMARY_PREFIX} .+_$", section, re.MULTILINE)
-        self.assertEqual(len(entries), len(summaries))
+    def test_description_markdown_is_escaped(self):
+        result = build_repo_lines([self._repo("workout", "Uses *fast* [tools]")])
+        self.assertIn(r"— Uses \*fast\* \[tools\]<br>", result)
 
 
 class TestUpdateReadme(unittest.TestCase):
@@ -396,42 +330,6 @@ class TestFetchRepositories(unittest.TestCase):
 
         self.assertEqual(len(repos), 1)
         self.assertEqual(repos[0]["name"], "repo-one")
-
-
-class TestPairedTradingSummaries(unittest.TestCase):
-    """Guards the cross-references between OpenTrading and Portfolio-Watcher."""
-
-    def test_opentrading_summary_names_portfolio_watcher(self):
-        self.assertIn("Portfolio-Watcher", REPO_SUMMARIES["opentrading"])
-
-    def test_portfolio_watcher_summary_names_opentrading(self):
-        self.assertIn("OpenTrading", REPO_SUMMARIES["portfolio-watcher"])
-
-    def test_build_summary_returns_curated_pairing(self):
-        for name in ("OpenTrading", "Portfolio-Watcher"):
-            with self.subTest(repo=name):
-                self.assertEqual(
-                    build_summary(name, "Some GitHub description"),
-                    REPO_SUMMARIES[name.casefold()],
-                )
-
-    def test_readme_section_shows_both_pairing_summaries(self):
-        readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(
-            encoding="utf-8"
-        )
-        section = readme.split(SECTION_START)[1].split(SECTION_END)[0]
-        entries = {
-            match.group("name").casefold(): match.group("entry")
-            for match in re.finditer(
-                r"(?:^|\n)(?P<entry>\d+\. \[(?P<name>[^\]]+)\]\([^)]+\).*?)(?=\n\d+\. \[|\Z)",
-                section,
-                flags=re.DOTALL,
-            )
-        }
-        for name in ("opentrading", "portfolio-watcher"):
-            with self.subTest(repo=name):
-                self.assertIn(name, entries)
-                self.assertIn(REPO_SUMMARIES[name], entries[name])
 
 
 if __name__ == "__main__":
