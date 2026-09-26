@@ -199,7 +199,7 @@ def _is_within(directory: str, ancestor: str) -> bool:
     """Return whether ``directory`` is ``ancestor`` or nested beneath it."""
     if ancestor == "/":
         return True
-    return directory == ancestor or directory.startswith(ancestor.rstrip("/") + "/")
+    return directory == ancestor or directory.startswith(ancestor + "/")
 
 
 def ecosystem_for(file_name: str) -> str | None:
@@ -658,8 +658,11 @@ def select_repositories(repositories: list[dict], wanted: list[str], owner: str)
     by_name = {str(repository.get("name", "")).casefold(): repository for repository in repositories}
     selected: list[dict] = []
     for name in wanted:
-        owner_part, sep, short_name = name.rpartition("/")
-        if sep and owner_part.casefold() != owner.casefold():
+        segments = name.split("/")
+        if len(segments) > 2:
+            raise ValueError(f"invalid repository selector '{name}': expected 'name' or 'owner/name'")
+        owner_part, short_name = ("", segments[0]) if len(segments) == 1 else segments
+        if owner_part and owner_part.casefold() != owner.casefold():
             raise ValueError(f"repository '{name}' does not belong to owner '{owner}'")
         repository = by_name.get(short_name.casefold())
         if repository is None:
