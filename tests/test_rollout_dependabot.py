@@ -227,7 +227,6 @@ class TestEnsureBranch(unittest.TestCase):
 class TestRollOutRepository(unittest.TestCase):
     def roll_out(self, **kwargs):
         options = {
-            "owner": "charles2ke",
             "token": "t0ken",
             "branch": "chore/weekly-dependabot",
             "direct": False,

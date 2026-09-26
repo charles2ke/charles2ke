@@ -536,7 +536,6 @@ class Outcome:
 def roll_out_repository(
     repository: dict,
     *,
-    owner: str,
     token: str | None,
     branch: str,
     direct: bool,
@@ -692,7 +691,6 @@ def main(argv: list[str] | None = None) -> int:
             outcomes.append(
                 roll_out_repository(
                     repository,
-                    owner=args.owner,
                     token=token,
                     branch=args.branch,
                     direct=args.direct,
