@@ -109,6 +109,10 @@ class TestDetectEcosystems(unittest.TestCase):
         detected = detect_ecosystems(["src/App.sln", "src/Api/Api.csproj"])
         self.assertEqual(detected, {"nuget": ["/src"]})
 
+    def test_projects_outside_the_solution_tree_are_retained(self):
+        detected = detect_ecosystems(["src/App.sln", "tools/Tool.csproj"])
+        self.assertEqual(detected, {"nuget": ["/src", "/tools"]})
+
     def test_project_directories_are_used_without_a_solution(self):
         detected = detect_ecosystems(["src/Api/Api.csproj", "src/Web/Web.fsproj"])
         self.assertEqual(detected, {"nuget": ["/src/Api", "/src/Web"]})
@@ -149,10 +153,10 @@ class TestRenderConfig(unittest.TestCase):
         self.assertIn(f"      {GROUP_NAME}:", config)
         self.assertIn('          - "*"', config)
 
-    def test_header_names_the_managing_script_and_owner(self):
-        config = render_config({"npm": ["/"]}, owner="someone")
+    def test_header_names_the_managing_script(self):
+        config = render_config({"npm": ["/"]})
         self.assertIn("scripts/rollout_dependabot.py", config)
-        self.assertIn("someone/someone", config)
+        self.assertNotIn("{owner}", config)
 
     def test_file_is_valid_yaml_shaped_and_newline_terminated(self):
         config = render_config({"github-actions": ["/"], "npm": ["/"]})
@@ -234,13 +238,17 @@ class TestRollOutRepository(unittest.TestCase):
         self.assertEqual(outcome.status, "skipped")
         self.assertIn("no package manifests", outcome.detail)
 
-    def test_truncated_listing_is_reported(self):
+    def test_truncated_listing_aborts_the_repository(self):
         with (
             patch("scripts.rollout_dependabot.fetch_paths", return_value=(["package.json"], True)),
-            patch("scripts.rollout_dependabot.fetch_config", return_value=(None, None)),
+            patch("scripts.rollout_dependabot.fetch_config") as fetch_config,
+            patch("scripts.rollout_dependabot.write_config") as write,
         ):
             outcome = self.roll_out(dry_run=True)
+        self.assertTrue(outcome.failed)
         self.assertIn("truncated", outcome.detail)
+        fetch_config.assert_not_called()
+        write.assert_not_called()
 
     def test_matching_config_is_left_alone(self):
         current = render_config({"npm": ["/"]})
@@ -378,6 +386,10 @@ class TestSelectRepositories(unittest.TestCase):
     def test_unknown_name_is_rejected(self):
         with self.assertRaises(ValueError):
             select_repositories([repo("one")], ["missing"], "charles2ke")
+
+    def test_mismatched_owner_prefix_is_rejected(self):
+        with self.assertRaises(ValueError):
+            select_repositories([repo("travel")], ["other/travel"], "charles2ke")
 
 
 class TestRenderSummary(unittest.TestCase):
