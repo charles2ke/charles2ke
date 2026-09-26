@@ -47,8 +47,8 @@ DEFAULT_BRANCH_NAME = "chore/weekly-dependabot"
 COMMIT_MESSAGE = "Upgrade packages weekly with Dependabot"
 PULL_REQUEST_TITLE = "Upgrade packages weekly with Dependabot"
 PULL_REQUEST_BODY = (
-    "Adds the weekly Dependabot configuration managed by "
-    "`scripts/rollout_dependabot.py` in {owner}/{owner}.\n\n"
+    "Adds the weekly Dependabot configuration managed centrally by "
+    "`scripts/rollout_dependabot.py`.\n\n"
     "Every Sunday Dependabot checks the package managers detected in this "
     "repository ({ecosystems}) and opens a pull request moving each dependency "
     "to its latest stable release."
@@ -61,9 +61,9 @@ SCHEDULE_TIMEZONE = "Etc/UTC"
 GROUP_NAME = "all-dependencies"
 
 MANAGED_HEADER = """\
-# Weekly package upgrades, managed by scripts/rollout_dependabot.py in
-# {owner}/{owner}. Every Sunday Dependabot opens a pull request moving each
-# dependency below to its latest stable release.
+# Weekly package upgrades, managed centrally by scripts/rollout_dependabot.py.
+# Every Sunday Dependabot opens a pull request moving each dependency below to
+# its latest stable release.
 #
 # Re-run the rollout script rather than editing this file by hand: the next
 # rollout replaces it with the configuration rendered from the script."""
@@ -195,6 +195,13 @@ def _directory_of(path: str) -> str:
     return f"/{parent}" if parent else "/"
 
 
+def _is_within(directory: str, ancestor: str) -> bool:
+    """Return whether ``directory`` is ``ancestor`` or nested beneath it."""
+    if ancestor == "/":
+        return True
+    return directory == ancestor or directory.startswith(ancestor.rstrip("/") + "/")
+
+
 def ecosystem_for(file_name: str) -> str | None:
     """Return the Dependabot ecosystem a manifest file name belongs to."""
     if file_name in MANIFEST_FILES:
@@ -245,14 +252,19 @@ def detect_ecosystems(paths: list[str]) -> dict[str, list[str]]:
 
         directory = _directory_of(path)
         if ecosystem == "nuget":
-            # A solution already pulls in the projects it references, so prefer
-            # solution directories and fall back to bare project directories.
             (solutions if file_name.endswith(".sln") else projects).add(directory)
             continue
 
         found.setdefault(ecosystem, set()).add(directory)
 
-    nuget_directories = solutions or projects
+    # A solution already pulls in the projects it references, so prefer solution
+    # directories and only fall back to project directories it doesn't cover.
+    uncovered_projects = {
+        directory
+        for directory in projects
+        if not any(_is_within(directory, solution) for solution in solutions)
+    }
+    nuget_directories = solutions | uncovered_projects
     if nuget_directories:
         found["nuget"] = nuget_directories
 
@@ -262,9 +274,9 @@ def detect_ecosystems(paths: list[str]) -> dict[str, list[str]]:
     }
 
 
-def render_config(ecosystems: dict[str, list[str]], owner: str = DEFAULT_OWNER) -> str:
+def render_config(ecosystems: dict[str, list[str]]) -> str:
     """Render the ``.github/dependabot.yml`` for the detected ``ecosystems``."""
-    lines = [MANAGED_HEADER.format(owner=owner), "", "version: 2", "updates:"]
+    lines = [MANAGED_HEADER, "", "version: 2", "updates:"]
 
     for ecosystem, directories in ecosystems.items():
         lines.append(f"  - package-ecosystem: {ecosystem}")
@@ -475,7 +487,6 @@ def open_pull_request(
     branch: str,
     base: str,
     ecosystems: list[str],
-    owner: str,
     token: str | None,
 ) -> str:
     """Return the URL of the rollout pull request, opening one when needed."""
@@ -497,7 +508,6 @@ def open_pull_request(
             "head": branch,
             "base": base,
             "body": PULL_REQUEST_BODY.format(
-                owner=owner,
                 ecosystems=", ".join(ecosystems) or "none",
             ),
         },
@@ -537,17 +547,19 @@ def roll_out_repository(
     default_branch = str(repository.get("default_branch") or "main")
 
     paths, truncated = fetch_paths(full_name, default_branch, token)
+    if truncated:
+        return Outcome(
+            full_name,
+            "failed",
+            "file listing truncated; refusing to render from a partial manifest set",
+        )
+
     ecosystems = detect_ecosystems(paths)
     if not ecosystems:
-        detail = "no package manifests found"
-        if truncated:
-            detail += " (file listing truncated)"
-        return Outcome(full_name, "skipped", detail)
+        return Outcome(full_name, "skipped", "no package manifests found")
 
-    desired = render_config(ecosystems, owner=owner)
+    desired = render_config(ecosystems)
     summary = ", ".join(ecosystems)
-    if truncated:
-        summary += " (file listing truncated)"
 
     current, sha = fetch_config(full_name, default_branch, token)
     if current == desired:
@@ -576,7 +588,6 @@ def roll_out_repository(
             target_branch,
             default_branch,
             list(ecosystems),
-            owner,
             token,
         )
 
@@ -648,8 +659,10 @@ def select_repositories(repositories: list[dict], wanted: list[str], owner: str)
     by_name = {str(repository.get("name", "")).casefold(): repository for repository in repositories}
     selected: list[dict] = []
     for name in wanted:
-        short_name = name.split("/")[-1].casefold()
-        repository = by_name.get(short_name)
+        owner_part, sep, short_name = name.rpartition("/")
+        if sep and owner_part.casefold() != owner.casefold():
+            raise ValueError(f"unknown repository '{name}' for owner '{owner}'")
+        repository = by_name.get(short_name.casefold())
         if repository is None:
             raise ValueError(f"unknown repository '{name}' for owner '{owner}'")
         selected.append(repository)
