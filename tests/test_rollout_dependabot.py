@@ -113,6 +113,10 @@ class TestDetectEcosystems(unittest.TestCase):
         detected = detect_ecosystems(["src/App.sln", "tools/Tool.csproj"])
         self.assertEqual(detected, {"nuget": ["/src", "/tools"]})
 
+    def test_sibling_directory_sharing_a_name_prefix_is_retained(self):
+        detected = detect_ecosystems(["src/App.sln", "srcX/Api.csproj"])
+        self.assertEqual(detected, {"nuget": ["/src", "/srcX"]})
+
     def test_root_solution_covers_every_project_directory(self):
         detected = detect_ecosystems(["App.sln", "src/Api/Api.csproj"])
         self.assertEqual(detected, {"nuget": ["/"]})
@@ -397,6 +401,12 @@ class TestSelectRepositories(unittest.TestCase):
     def test_malformed_selector_with_extra_segments_is_rejected(self):
         with self.assertRaises(ValueError):
             select_repositories([repo("travel")], ["a/b/travel"], "charles2ke")
+
+    def test_malformed_selector_with_empty_segments_is_rejected(self):
+        with self.assertRaises(ValueError):
+            select_repositories([repo("travel")], ["/travel"], "charles2ke")
+        with self.assertRaises(ValueError):
+            select_repositories([repo("travel")], ["travel/"], "charles2ke")
 
 
 class TestRenderSummary(unittest.TestCase):
