@@ -168,7 +168,7 @@ class TestRenderConfig(unittest.TestCase):
     def test_header_names_the_managing_script(self):
         config = render_config({"npm": ["/"]})
         self.assertIn("scripts/rollout_dependabot.py", config)
-        self.assertNotIn("{owner}", config)
+        self.assertIn("managed centrally by", config)
 
     def test_file_is_valid_yaml_shaped_and_newline_terminated(self):
         config = render_config({"github-actions": ["/"], "npm": ["/"]})
