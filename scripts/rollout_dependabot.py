@@ -137,6 +137,10 @@ class NotFoundError(GitHubAPIError):
     """Raised when the GitHub API answers 404 (no config file, no branch, ...)."""
 
 
+class BranchNotRolloutOwnedError(GitHubAPIError):
+    """Raised when the rollout branch exists but was not created by this script."""
+
+
 def _request(
     url: str,
     token: str | None,
@@ -402,9 +406,19 @@ def branch_head(full_name: str, branch: str, token: str | None) -> str | None:
     return str((payload.get("object") or {}).get("sha") or "") or None
 
 
+def commit_message(full_name: str, sha: str, token: str | None) -> str:
+    """Return the message of the commit at ``sha``."""
+    url = f"{API_ROOT}/repos/{full_name}/git/commits/{urllib.parse.quote(sha, safe='')}"
+    payload = _request(url, token)
+    if not isinstance(payload, dict):
+        return ""
+    return str(payload.get("message") or "")
+
+
 def ensure_branch(full_name: str, branch: str, base_sha: str, token: str | None) -> None:
     """Point ``branch`` at ``base_sha``, creating it when it does not exist."""
-    if branch_head(full_name, branch, token) is None:
+    head = branch_head(full_name, branch, token)
+    if head is None:
         _request(
             f"{API_ROOT}/repos/{full_name}/git/refs",
             token,
@@ -412,6 +426,18 @@ def ensure_branch(full_name: str, branch: str, base_sha: str, token: str | None)
             payload={"ref": f"refs/heads/{branch}", "sha": base_sha},
         )
         return
+
+    if head == base_sha:
+        return
+
+    # The branch already exists and points elsewhere. Only reset it when its
+    # tip is a commit this script made previously; otherwise it may carry
+    # unrelated work that force-updating the ref would discard.
+    if not commit_message(full_name, head, token).startswith(COMMIT_MESSAGE):
+        raise BranchNotRolloutOwnedError(
+            f"refs/heads/{branch} in {full_name} already exists and its tip "
+            f"({head}) was not created by this script; refusing to force-update it"
+        )
 
     _request(
         f"{API_ROOT}/repos/{full_name}/git/refs/heads/{urllib.parse.quote(branch, safe='')}",

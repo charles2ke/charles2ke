@@ -14,13 +14,16 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts.rollout_dependabot import (
+    COMMIT_MESSAGE,
     CONFIG_PATH,
     GROUP_NAME,
     SCHEDULE_DAY,
+    BranchNotRolloutOwnedError,
     GitHubAPIError,
     Outcome,
     detect_ecosystems,
     ecosystem_for,
+    ensure_branch,
     fetch_repositories,
     main,
     render_config,
@@ -169,6 +172,48 @@ class TestProfileRepositoryConfig(unittest.TestCase):
         ]
         expected = render_config(detect_ecosystems(paths))
         self.assertEqual((REPO_ROOT / CONFIG_PATH).read_text(encoding="utf-8"), expected)
+
+
+class TestEnsureBranch(unittest.TestCase):
+    def test_creates_the_branch_when_it_does_not_exist(self):
+        with (
+            patch("scripts.rollout_dependabot.branch_head", return_value=None),
+            patch("scripts.rollout_dependabot._request") as request,
+        ):
+            ensure_branch("charles2ke/demo", "chore/weekly-dependabot", "basesha", "t0ken")
+        request.assert_called_once()
+        self.assertEqual(request.call_args.kwargs["method"], "POST")
+
+    def test_does_nothing_when_branch_already_points_at_base_sha(self):
+        with (
+            patch("scripts.rollout_dependabot.branch_head", return_value="basesha"),
+            patch("scripts.rollout_dependabot._request") as request,
+        ):
+            ensure_branch("charles2ke/demo", "chore/weekly-dependabot", "basesha", "t0ken")
+        request.assert_not_called()
+
+    def test_force_updates_a_branch_this_script_previously_created(self):
+        with (
+            patch("scripts.rollout_dependabot.branch_head", return_value="oldsha"),
+            patch(
+                "scripts.rollout_dependabot.commit_message", return_value=COMMIT_MESSAGE
+            ),
+            patch("scripts.rollout_dependabot._request") as request,
+        ):
+            ensure_branch("charles2ke/demo", "chore/weekly-dependabot", "basesha", "t0ken")
+        request.assert_called_once()
+        self.assertEqual(request.call_args.kwargs["method"], "PATCH")
+        self.assertEqual(request.call_args.kwargs["payload"]["force"], True)
+
+    def test_refuses_to_force_update_a_branch_it_did_not_create(self):
+        with (
+            patch("scripts.rollout_dependabot.branch_head", return_value="oldsha"),
+            patch("scripts.rollout_dependabot.commit_message", return_value="Unrelated work"),
+            patch("scripts.rollout_dependabot._request") as request,
+            self.assertRaises(BranchNotRolloutOwnedError),
+        ):
+            ensure_branch("charles2ke/demo", "chore/weekly-dependabot", "basesha", "t0ken")
+        request.assert_not_called()
 
 
 class TestRollOutRepository(unittest.TestCase):
