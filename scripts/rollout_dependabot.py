@@ -661,7 +661,7 @@ def select_repositories(repositories: list[dict], wanted: list[str], owner: str)
     for name in wanted:
         owner_part, sep, short_name = name.rpartition("/")
         if sep and owner_part.casefold() != owner.casefold():
-            raise ValueError(f"unknown repository '{name}' for owner '{owner}'")
+            raise ValueError(f"repository '{name}' does not belong to owner '{owner}'")
         repository = by_name.get(short_name.casefold())
         if repository is None:
             raise ValueError(f"unknown repository '{name}' for owner '{owner}'")

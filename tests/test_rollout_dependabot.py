@@ -113,6 +113,10 @@ class TestDetectEcosystems(unittest.TestCase):
         detected = detect_ecosystems(["src/App.sln", "tools/Tool.csproj"])
         self.assertEqual(detected, {"nuget": ["/src", "/tools"]})
 
+    def test_root_solution_covers_every_project_directory(self):
+        detected = detect_ecosystems(["App.sln", "src/Api/Api.csproj"])
+        self.assertEqual(detected, {"nuget": ["/"]})
+
     def test_project_directories_are_used_without_a_solution(self):
         detected = detect_ecosystems(["src/Api/Api.csproj", "src/Web/Web.fsproj"])
         self.assertEqual(detected, {"nuget": ["/src/Api", "/src/Web"]})
