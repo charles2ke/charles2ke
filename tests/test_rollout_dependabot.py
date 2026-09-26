@@ -394,6 +394,10 @@ class TestSelectRepositories(unittest.TestCase):
         with self.assertRaises(ValueError):
             select_repositories([repo("travel")], ["other/travel"], "charles2ke")
 
+    def test_malformed_selector_with_extra_segments_is_rejected(self):
+        with self.assertRaises(ValueError):
+            select_repositories([repo("travel")], ["a/b/travel"], "charles2ke")
+
 
 class TestRenderSummary(unittest.TestCase):
     def test_empty_rollout(self):
