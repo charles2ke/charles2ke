@@ -117,6 +117,10 @@ class TestDetectEcosystems(unittest.TestCase):
         detected = detect_ecosystems(["src/App.sln", "srcX/Api.csproj"])
         self.assertEqual(detected, {"nuget": ["/src", "/srcX"]})
 
+    def test_deeply_nested_project_under_a_solution_is_covered(self):
+        detected = detect_ecosystems(["src/App.sln", "src/Api/Nested/Nested.csproj"])
+        self.assertEqual(detected, {"nuget": ["/src"]})
+
     def test_root_solution_covers_every_project_directory(self):
         detected = detect_ecosystems(["App.sln", "src/Api/Api.csproj"])
         self.assertEqual(detected, {"nuget": ["/"]})
@@ -407,6 +411,8 @@ class TestSelectRepositories(unittest.TestCase):
             select_repositories([repo("travel")], ["/travel"], "charles2ke")
         with self.assertRaises(ValueError):
             select_repositories([repo("travel")], ["travel/"], "charles2ke")
+        with self.assertRaises(ValueError):
+            select_repositories([repo("travel")], [" / "], "charles2ke")
 
 
 class TestRenderSummary(unittest.TestCase):

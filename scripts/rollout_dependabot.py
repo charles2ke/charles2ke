@@ -658,7 +658,7 @@ def select_repositories(repositories: list[dict], wanted: list[str], owner: str)
     by_name = {str(repository.get("name", "")).casefold(): repository for repository in repositories}
     selected: list[dict] = []
     for name in wanted:
-        segments = name.split("/")
+        segments = [segment.strip() for segment in name.split("/")]
         if len(segments) > 2 or any(not segment for segment in segments):
             raise ValueError(f"invalid repository selector '{name}': expected 'name' or 'owner/name'")
         owner_part, short_name = ("", segments[0]) if len(segments) == 1 else segments
