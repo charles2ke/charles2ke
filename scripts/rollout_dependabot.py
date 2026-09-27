@@ -563,6 +563,12 @@ def roll_out_repository(
     current, sha = fetch_config(full_name, default_branch, token)
     if current == desired:
         return Outcome(full_name, "up to date", summary)
+    if current is not None and not current.startswith(MANAGED_HEADER):
+        return Outcome(
+            full_name,
+            "skipped",
+            "existing Dependabot configuration is not managed by this script",
+        )
 
     if dry_run:
         status = "would update" if current is not None else "would create"

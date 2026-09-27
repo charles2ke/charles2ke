@@ -286,12 +286,27 @@ class TestRollOutRepository(unittest.TestCase):
         ensure.assert_not_called()
 
     def test_dry_run_reports_an_outdated_config_as_an_update(self):
+        current = f"{render_config({'npm': ['/']})}\n# stale\n"
         with (
             patch("scripts.rollout_dependabot.fetch_paths", return_value=(["package.json"], False)),
-            patch("scripts.rollout_dependabot.fetch_config", return_value=("version: 2\n", "sha1")),
+            patch("scripts.rollout_dependabot.fetch_config", return_value=(current, "sha1")),
         ):
             outcome = self.roll_out(dry_run=True)
         self.assertEqual(outcome.status, "would update")
+
+    def test_non_generated_config_is_left_alone(self):
+        current = "version: 2\nupdates:\n- package-ecosystem: npm\n  directory: /\n"
+        with (
+            patch("scripts.rollout_dependabot.fetch_paths", return_value=(["package.json"], False)),
+            patch("scripts.rollout_dependabot.fetch_config", return_value=(current, "sha1")),
+            patch("scripts.rollout_dependabot.write_config") as write,
+            patch("scripts.rollout_dependabot.ensure_branch") as ensure,
+        ):
+            outcome = self.roll_out()
+        self.assertEqual(outcome.status, "skipped")
+        self.assertIn("not managed", outcome.detail)
+        write.assert_not_called()
+        ensure.assert_not_called()
 
     def test_pull_request_flow_writes_to_the_working_branch(self):
         with (
@@ -317,9 +332,10 @@ class TestRollOutRepository(unittest.TestCase):
         self.assertEqual(outcome.url, "https://github.com/charles2ke/demo/pull/1")
 
     def test_direct_flow_commits_to_the_default_branch(self):
+        current = f"{render_config({'npm': ['/']})}\n# stale\n"
         with (
             patch("scripts.rollout_dependabot.fetch_paths", return_value=(["package.json"], False)),
-            patch("scripts.rollout_dependabot.fetch_config", return_value=("stale", "sha1")),
+            patch("scripts.rollout_dependabot.fetch_config", return_value=(current, "sha1")),
             patch("scripts.rollout_dependabot.ensure_branch") as ensure,
             patch("scripts.rollout_dependabot.write_config") as write,
             patch("scripts.rollout_dependabot.open_pull_request") as pull_request,
