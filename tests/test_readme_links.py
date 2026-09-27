@@ -322,6 +322,7 @@ class TestLinksAreReachable(unittest.TestCase):
             self.skipTest("GitHub Pages host is not reachable")
 
         status = _live_status(url)
+        # A 410 indicates permanent removal, not deployment lag.
         if status is None or status == 404:
             self.skipTest(
                 f"{url} is not being served right now; the Pages deployment is "
