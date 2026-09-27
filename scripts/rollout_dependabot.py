@@ -372,10 +372,7 @@ def fetch_paths(full_name: str, ref: str, token: str | None) -> tuple[list[str],
         f"{API_ROOT}/repos/{full_name}/git/trees/"
         f"{urllib.parse.quote(ref, safe='')}?recursive=1"
     )
-    try:
-        payload = _request(url, token)
-    except NotFoundError:
-        return [], False
+    payload = _request(url, token)
 
     if not isinstance(payload, dict):
         return [], False
