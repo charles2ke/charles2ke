@@ -180,7 +180,7 @@ def _request(
             message = f"GitHub API request failed: invalid JSON response ({url})"
             retryable = True
 
-        if not retryable or attempt == MAX_ATTEMPTS:
+        if method != "GET" or not retryable or attempt == MAX_ATTEMPTS:
             raise GitHubAPIError(message)
 
         print(f"{message} (attempt {attempt}/{MAX_ATTEMPTS}), retrying...", file=sys.stderr)

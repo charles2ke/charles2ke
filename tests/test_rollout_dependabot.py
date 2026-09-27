@@ -8,7 +8,8 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
+from urllib.error import HTTPError
 
 # Make the scripts package importable without installing.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -20,6 +21,7 @@ from scripts.rollout_dependabot import (
     SCHEDULE_DAY,
     BranchNotRolloutOwnedError,
     GitHubAPIError,
+    _request,
     Outcome,
     detect_ecosystems,
     ecosystem_for,
@@ -230,6 +232,33 @@ class TestEnsureBranch(unittest.TestCase):
         ):
             ensure_branch("charles2ke/demo", "chore/weekly-dependabot", "basesha", "t0ken")
         request.assert_not_called()
+
+
+class TestRequests(unittest.TestCase):
+    def test_retries_failed_get_requests(self):
+        response = MagicMock()
+        response.read.return_value = b"{}"
+        response.__enter__.return_value = response
+        with (
+            patch(
+                "scripts.rollout_dependabot.urllib.request.urlopen",
+                side_effect=[HTTPError("https://example.com", 502, "Bad Gateway", {}, None), response],
+            ) as urlopen,
+            patch("scripts.rollout_dependabot.time.sleep"),
+        ):
+            self.assertEqual(_request("https://example.com", None), {})
+        self.assertEqual(urlopen.call_count, 2)
+
+    def test_does_not_retry_failed_write_requests(self):
+        with (
+            patch(
+                "scripts.rollout_dependabot.urllib.request.urlopen",
+                side_effect=HTTPError("https://example.com", 502, "Bad Gateway", {}, None),
+            ) as urlopen,
+            self.assertRaises(GitHubAPIError),
+        ):
+            _request("https://example.com", None, method="POST", payload={})
+        urlopen.assert_called_once()
 
 
 class TestRollOutRepository(unittest.TestCase):
