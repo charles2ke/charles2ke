@@ -148,6 +148,7 @@ def _request(
     method: str = "GET",
     payload: dict | None = None,
 ) -> object:
+    """Make a GitHub API request, retrying only safe GET requests."""
     headers = {
         "Accept": "application/vnd.github+json",
         "User-Agent": USER_AGENT,
