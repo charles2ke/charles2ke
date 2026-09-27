@@ -322,7 +322,7 @@ class TestLinksAreReachable(unittest.TestCase):
             self.skipTest("GitHub Pages host is not reachable")
 
         status = _live_status(url)
-        if status is None or status in BROKEN_STATUSES:
+        if status is None or status == 404:
             self.skipTest(
                 f"{url} is not being served right now; the Pages deployment is "
                 "asynchronous, and the structural checks above already assert "
@@ -422,6 +422,14 @@ class TestReachabilityDecisions(unittest.TestCase):
         with patch(
             "tests.test_readme_links._live_status", return_value=None
         ), self.assertRaises(unittest.SkipTest):
+            checker.test_failure_dashboard_is_published()
+
+    def test_dashboard_check_fails_when_the_page_is_gone(self):
+        checker = self._checker({PAGES_HOST})
+
+        with patch(
+            "tests.test_readme_links._live_status", return_value=410
+        ), self.assertRaises(AssertionError):
             checker.test_failure_dashboard_is_published()
 
     def test_dashboard_check_passes_when_the_page_is_served(self):
