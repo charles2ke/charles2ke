@@ -311,7 +311,7 @@ class TestLinksAreReachable(unittest.TestCase):
         broken = [
             f"{url} -> {status}"
             for url, status in zip(urls, statuses)
-if status in BROKEN_STATUSES and (status != 404 or not _is_pages_url(url)):
+            if status in BROKEN_STATUSES and (status != 404 or not _is_pages_url(url))
         ]
 
         self.assertEqual([], broken, "links must not be broken")
