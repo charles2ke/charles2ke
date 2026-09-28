@@ -543,6 +543,14 @@ def roll_out_repository(
     full_name = str(repository.get("full_name", ""))
     default_branch = str(repository.get("default_branch") or "main")
 
+    if not direct and branch == default_branch:
+        return Outcome(
+            full_name,
+            "failed",
+            f"--branch '{branch}' matches the default branch '{default_branch}'; "
+            "refusing to open a pull request from the default branch onto itself",
+        )
+
     paths, truncated = fetch_paths(full_name, default_branch, token)
     if truncated:
         return Outcome(

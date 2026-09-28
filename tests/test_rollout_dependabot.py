@@ -388,6 +388,27 @@ class TestRollOutRepository(unittest.TestCase):
         self.assertTrue(outcome.failed)
         write.assert_not_called()
 
+    def test_branch_matching_default_branch_is_rejected_in_pull_request_mode(self):
+        with (
+            patch("scripts.rollout_dependabot.fetch_paths") as fetch_paths,
+            patch("scripts.rollout_dependabot.write_config") as write,
+        ):
+            outcome = self.roll_out(branch="main")
+        self.assertTrue(outcome.failed)
+        self.assertIn("matches the default branch", outcome.detail)
+        fetch_paths.assert_not_called()
+        write.assert_not_called()
+
+    def test_branch_matching_default_branch_is_allowed_in_direct_mode(self):
+        with (
+            patch("scripts.rollout_dependabot.fetch_paths", return_value=(["package.json"], False)),
+            patch("scripts.rollout_dependabot.fetch_config", return_value=(None, None)),
+            patch("scripts.rollout_dependabot.write_config") as write,
+        ):
+            outcome = self.roll_out(branch="main", direct=True)
+        self.assertEqual(outcome.status, "created")
+        write.assert_called_once()
+
 
 class TestFetchRepositories(unittest.TestCase):
     def test_forks_archived_and_other_owners_are_dropped(self):
