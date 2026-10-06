@@ -6,8 +6,8 @@ GitHub Pages site — so a broken link is immediately visible to visitors. These
 tests keep every link honest:
 
 * the structural checks always run and need no network, and
-* the reachability checks run against every non-Pages host that can be reached
-  (all of them in CI), failing only on genuinely dead links.
+* the reachability checks run against every host that can be reached (all of
+  them in CI), failing only on genuinely dead links.
 """
 
 from __future__ import annotations
@@ -267,11 +267,16 @@ class TestGitHubPagesLinks(unittest.TestCase):
 
 
 class TestLinksAreReachable(unittest.TestCase):
-    """Fetch external links and fail on the ones that are gone.
+    """Fetch every link and fail on the ones that are gone.
 
     Hosts that cannot be resolved are reported as skipped rather than broken so
-    the suite still passes in sandboxes with restricted network access. GitHub
-    Pages links are verified structurally because deployment is asynchronous.
+    the suite still passes in sandboxes with restricted network access.
+
+    Links into this repository's own Pages site are never failed on a 404: that
+    site is rebuilt and swapped in asynchronously by the 'Deploy to GitHub
+    Pages' workflow, so a page can answer 404 for reasons no pull request can
+    control. `TestGitHubPagesLinks` still asserts — without the network — that
+    every Pages link names a file the workflow publishes.
     """
 
     @classmethod
@@ -306,19 +311,30 @@ class TestLinksAreReachable(unittest.TestCase):
         broken = [
             f"{url} -> {status}"
             for url, status in zip(urls, statuses)
-            if status in BROKEN_STATUSES and not _is_pages_url(url)
+            if status in BROKEN_STATUSES and (status != 404 or not _is_pages_url(url))
         ]
+
         self.assertEqual([], broken, "links must not be broken")
 
     def test_failure_dashboard_is_published(self):
-        """Check the dashboard when Pages has finished publishing it."""
         url = f"{PAGES_BASE_URL}failures.html"
         if urllib.parse.urlsplit(url).netloc not in self.hosts:
             self.skipTest("GitHub Pages host is not reachable")
 
         status = _live_status(url)
-        if status is None or status in BROKEN_STATUSES:
-            self.skipTest("the GitHub Pages deployment has not published the dashboard yet")
+        # A 410 indicates permanent removal, not deployment lag.
+        if status is None or status == 404:
+            self.skipTest(
+                f"{url} is not being served right now; the Pages deployment is "
+                "asynchronous, and the structural checks above already assert "
+                "that the workflow publishes the dashboard"
+            )
+
+        self.assertNotIn(
+            status,
+            BROKEN_STATUSES,
+            f"{url} is not published; check the 'Deploy to GitHub Pages' workflow",
+        )
 
 
 class TestTransientBrokenStatuses(unittest.TestCase):
@@ -353,8 +369,8 @@ class TestTransientBrokenStatuses(unittest.TestCase):
         self.assertEqual(1, status_code.call_count)
 
 
-class TestPagesUrls(unittest.TestCase):
-    """Pages links are recognised so their runtime 404s can be tolerated."""
+class TestPagesSiteAvailability(unittest.TestCase):
+    """Pages URLs must be recognised so their 404s can be tolerated."""
 
     def test_pages_urls_are_recognised(self):
         self.assertTrue(_is_pages_url(f"{PAGES_BASE_URL}failures.html"))
@@ -362,7 +378,7 @@ class TestPagesUrls(unittest.TestCase):
 
 
 class TestReachabilityDecisions(unittest.TestCase):
-    """Pages runtime checks must tolerate asynchronous publication.
+    """Pages 404s must be tolerated while other dead links still fail.
 
     These build a `TestLinksAreReachable` instance without running its
     network-probing `setUpClass`, so the decision branches inside
@@ -377,22 +393,21 @@ class TestReachabilityDecisions(unittest.TestCase):
         checker.urls = list(urls)
         return checker
 
-    def test_broken_pages_link_passes_during_a_site_outage(self):
+    def test_broken_pages_link_passes_while_the_deployment_lags(self):
         url = f"{PAGES_BASE_URL}failures.html"
         checker = self._checker({PAGES_HOST}, [url])
 
         with patch("tests.test_readme_links._live_status", return_value=404):
             checker.test_links_are_not_dead()  # must not raise
 
-    def test_broken_pages_link_passes_while_the_site_is_live(self):
+    def test_permanently_gone_pages_link_fails(self):
         url = f"{PAGES_BASE_URL}failures.html"
         checker = self._checker({PAGES_HOST}, [url])
 
-        def fake_live_status(target):
-            return 200 if target == PAGES_BASE_URL else 404
-
-        with patch("tests.test_readme_links._live_status", side_effect=fake_live_status):
-            checker.test_links_are_not_dead()  # must not raise
+        with patch(
+            "tests.test_readme_links._live_status", return_value=410
+        ), self.assertRaises(AssertionError):
+            checker.test_links_are_not_dead()
 
     def test_broken_external_link_fails_regardless_of_pages_state(self):
         url = "https://example.com/missing"
@@ -403,7 +418,7 @@ class TestReachabilityDecisions(unittest.TestCase):
         ), self.assertRaises(AssertionError):
             checker.test_links_are_not_dead()
 
-    def test_dashboard_check_skips_during_a_site_outage(self):
+    def test_dashboard_check_skips_while_the_deployment_lags(self):
         checker = self._checker({PAGES_HOST})
 
         with patch(
@@ -419,18 +434,15 @@ class TestReachabilityDecisions(unittest.TestCase):
         ), self.assertRaises(unittest.SkipTest):
             checker.test_failure_dashboard_is_published()
 
-    def test_dashboard_check_skips_when_a_stale_deployment_is_live(self):
+    def test_dashboard_check_fails_when_the_page_is_gone(self):
         checker = self._checker({PAGES_HOST})
 
-        def fake_live_status(target):
-            return 200 if target == PAGES_BASE_URL else 404
-
         with patch(
-            "tests.test_readme_links._live_status", side_effect=fake_live_status
-        ), self.assertRaises(unittest.SkipTest):
+            "tests.test_readme_links._live_status", return_value=410
+        ), self.assertRaises(AssertionError):
             checker.test_failure_dashboard_is_published()
 
-    def test_dashboard_check_passes_when_published(self):
+    def test_dashboard_check_passes_when_the_page_is_served(self):
         checker = self._checker({PAGES_HOST})
 
         with patch("tests.test_readme_links._live_status", return_value=200):

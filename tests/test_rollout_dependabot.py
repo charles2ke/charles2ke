@@ -15,7 +15,6 @@ from urllib.error import HTTPError
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts.rollout_dependabot import (
-    COMMIT_MESSAGE,
     CONFIG_PATH,
     GROUP_NAME,
     SCHEDULE_DAY,
@@ -210,23 +209,9 @@ class TestEnsureBranch(unittest.TestCase):
             ensure_branch("charles2ke/demo", "chore/weekly-dependabot", "basesha", "t0ken")
         request.assert_not_called()
 
-    def test_force_updates_a_branch_this_script_previously_created(self):
+    def test_refuses_to_force_update_a_divergent_branch(self):
         with (
             patch("scripts.rollout_dependabot.branch_head", return_value="oldsha"),
-            patch(
-                "scripts.rollout_dependabot.commit_message", return_value=COMMIT_MESSAGE
-            ),
-            patch("scripts.rollout_dependabot._request") as request,
-        ):
-            ensure_branch("charles2ke/demo", "chore/weekly-dependabot", "basesha", "t0ken")
-        request.assert_called_once()
-        self.assertEqual(request.call_args.kwargs["method"], "PATCH")
-        self.assertEqual(request.call_args.kwargs["payload"]["force"], True)
-
-    def test_refuses_to_force_update_a_branch_it_did_not_create(self):
-        with (
-            patch("scripts.rollout_dependabot.branch_head", return_value="oldsha"),
-            patch("scripts.rollout_dependabot.commit_message", return_value="Unrelated work"),
             patch("scripts.rollout_dependabot._request") as request,
             self.assertRaises(BranchNotRolloutOwnedError),
         ):
@@ -341,6 +326,7 @@ class TestRollOutRepository(unittest.TestCase):
         with (
             patch("scripts.rollout_dependabot.fetch_paths", return_value=(["package.json"], False)),
             patch("scripts.rollout_dependabot.fetch_config", return_value=(None, None)),
+            patch("scripts.rollout_dependabot.find_open_pull_request", return_value=None),
             patch("scripts.rollout_dependabot.branch_head", return_value="basesha"),
             patch("scripts.rollout_dependabot.ensure_branch") as ensure,
             patch("scripts.rollout_dependabot.write_config") as write,
@@ -359,6 +345,28 @@ class TestRollOutRepository(unittest.TestCase):
         self.assertEqual(outcome.status, "created")
         self.assertTrue(outcome.changed)
         self.assertEqual(outcome.url, "https://github.com/charles2ke/demo/pull/1")
+
+    def test_open_pull_request_is_reported_as_pending_without_branch_changes(self):
+        pull_request_url = "https://github.com/charles2ke/demo/pull/1"
+        with (
+            patch("scripts.rollout_dependabot.fetch_paths", return_value=(["package.json"], False)),
+            patch("scripts.rollout_dependabot.fetch_config", return_value=(None, None)),
+            patch(
+                "scripts.rollout_dependabot.find_open_pull_request",
+                return_value=pull_request_url,
+            ),
+            patch("scripts.rollout_dependabot.branch_head") as branch_head,
+            patch("scripts.rollout_dependabot.ensure_branch") as ensure,
+            patch("scripts.rollout_dependabot.write_config") as write,
+        ):
+            outcome = self.roll_out()
+
+        self.assertEqual(outcome.status, "pending")
+        self.assertIn("still open", outcome.detail)
+        self.assertEqual(outcome.url, pull_request_url)
+        branch_head.assert_not_called()
+        ensure.assert_not_called()
+        write.assert_not_called()
 
     def test_direct_flow_commits_to_the_default_branch(self):
         current = f"{render_config({'npm': ['/']})}\n# stale\n"
@@ -381,6 +389,7 @@ class TestRollOutRepository(unittest.TestCase):
         with (
             patch("scripts.rollout_dependabot.fetch_paths", return_value=(["package.json"], False)),
             patch("scripts.rollout_dependabot.fetch_config", return_value=(None, None)),
+            patch("scripts.rollout_dependabot.find_open_pull_request", return_value=None),
             patch("scripts.rollout_dependabot.branch_head", return_value=None),
             patch("scripts.rollout_dependabot.write_config") as write,
         ):
