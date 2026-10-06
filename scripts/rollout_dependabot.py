@@ -4,7 +4,7 @@
 The upgrading itself is done by Dependabot version updates, which move each
 dependency to its latest stable release and open a pull request. Dependabot is
 configured per repository, so this script is the rollout: for every repository
-owned by the account it
+owned by the account, it:
 
 1. reads the default branch's file list and detects which package managers the
    repository actually uses (``package.json`` -> npm, ``*.csproj`` -> nuget,
