@@ -56,23 +56,25 @@
     <img alt="Field: Astronomy Visualisation" src="https://img.shields.io/badge/Field-Astronomy%20Visualisation-0A66C2?style=flat-square"> <img alt="Value: Accurate sky reconstruction" src="https://img.shields.io/badge/Value-Accurate%20sky%20reconstruction-2EA043?style=flat-square">
 16. [OpenTrading](https://github.com/charles2ke/OpenTrading) — A trading platform for buying and selling stocks across exchanges worldwide, paired with Portfolio-Watcher for watching the same symbols.<br>
     <img alt="Field: FinTech" src="https://img.shields.io/badge/Field-FinTech-0A66C2?style=flat-square"> <img alt="Value: Global trade execution" src="https://img.shields.io/badge/Value-Global%20trade%20execution-2EA043?style=flat-square">
-17. [platform-shared](https://github.com/charles2ke/platform-shared) — Shared auth, profile and notification services reused by social, travel, workout and basa.<br>
+17. [pixel](https://github.com/charles2ke/pixel) — Photo Album<br>
+    <img alt="Field: Software Engineering" src="https://img.shields.io/badge/Field-Software%20Engineering-0A66C2?style=flat-square"> <img alt="Value: Hands-on learning and experimentation" src="https://img.shields.io/badge/Value-Hands--on%20learning%20and%20experimentation-2EA043?style=flat-square">
+18. [platform-shared](https://github.com/charles2ke/platform-shared) — Shared auth, profile and notification services reused by social, travel, workout and basa.<br>
     <img alt="Field: Platform Engineering" src="https://img.shields.io/badge/Field-Platform%20Engineering-0A66C2?style=flat-square"> <img alt="Value: Reusable shared services" src="https://img.shields.io/badge/Value-Reusable%20shared%20services-2EA043?style=flat-square">
-18. [Portfolio-Watcher](https://github.com/charles2ke/Portfolio-Watcher) — Gathers every financial account into one place so the whole portfolio is visible at a glance — the watchlist and alerting companion to OpenTrading.<br>
+19. [Portfolio-Watcher](https://github.com/charles2ke/Portfolio-Watcher) — Gathers every financial account into one place so the whole portfolio is visible at a glance — the watchlist and alerting companion to OpenTrading.<br>
     <img alt="Field: Personal Finance" src="https://img.shields.io/badge/Field-Personal%20Finance-0A66C2?style=flat-square"> <img alt="Value: Unified portfolio view" src="https://img.shields.io/badge/Value-Unified%20portfolio%20view-2EA043?style=flat-square">
-19. [social](https://github.com/charles2ke/social) — A social media manager for planning and coordinating posts across audiences.<br>
+20. [social](https://github.com/charles2ke/social) — A social media manager for planning and coordinating posts across audiences.<br>
     <img alt="Field: Social Media" src="https://img.shields.io/badge/Field-Social%20Media-0A66C2?style=flat-square"> <img alt="Value: Coordinated audience engagement" src="https://img.shields.io/badge/Value-Coordinated%20audience%20engagement-2EA043?style=flat-square">
-20. [tax-break](https://github.com/charles2ke/tax-break) — An online estimator that makes individual income tax easier to understand before filing.<br>
+21. [tax-break](https://github.com/charles2ke/tax-break) — An online estimator that makes individual income tax easier to understand before filing.<br>
     <img alt="Field: Taxation" src="https://img.shields.io/badge/Field-Taxation-0A66C2?style=flat-square"> <img alt="Value: Simplified tax filing" src="https://img.shields.io/badge/Value-Simplified%20tax%20filing-2EA043?style=flat-square">
-21. [tito](https://github.com/charles2ke/tito) — Keeps a team in sync on when everyone is in and when everyone is out — together in, together out.<br>
+22. [tito](https://github.com/charles2ke/tito) — Keeps a team in sync on when everyone is in and when everyone is out — together in, together out.<br>
     <img alt="Field: Team Coordination" src="https://img.shields.io/badge/Field-Team%20Coordination-0A66C2?style=flat-square"> <img alt="Value: Together in, together out" src="https://img.shields.io/badge/Value-Together%20in%2C%20together%20out-2EA043?style=flat-square">
-22. [TitoOS](https://github.com/charles2ke/TitoOS) — An operating system for agents: a runtime purpose-built for running and supervising them.<br>
+23. [TitoOS](https://github.com/charles2ke/TitoOS) — An operating system for agents: a runtime purpose-built for running and supervising them.<br>
     <img alt="Field: Agent Platforms" src="https://img.shields.io/badge/Field-Agent%20Platforms-0A66C2?style=flat-square"> <img alt="Value: Purpose-built agent runtime" src="https://img.shields.io/badge/Value-Purpose--built%20agent%20runtime-2EA043?style=flat-square">
-23. [travel](https://github.com/charles2ke/travel) — A place to explore, dream and discover trips worth taking.<br>
+24. [travel](https://github.com/charles2ke/travel) — A place to explore, dream and discover trips worth taking.<br>
     <img alt="Field: Travel" src="https://img.shields.io/badge/Field-Travel-0A66C2?style=flat-square"> <img alt="Value: Easier trip discovery" src="https://img.shields.io/badge/Value-Easier%20trip%20discovery-2EA043?style=flat-square">
-24. [workout](https://github.com/charles2ke/workout) — A weekly workout plan that makes training consistent and easy to follow.<br>
+25. [workout](https://github.com/charles2ke/workout) — A weekly workout plan that makes training consistent and easy to follow.<br>
     <img alt="Field: Health and Fitness" src="https://img.shields.io/badge/Field-Health%20and%20Fitness-0A66C2?style=flat-square"> <img alt="Value: Consistent training habits" src="https://img.shields.io/badge/Value-Consistent%20training%20habits-2EA043?style=flat-square">
-25. [X-Big-Brother](https://github.com/charles2ke/X-Big-Brother) — Shows how your data, Wi-Fi and mobile network watch you, and hands control back to you.<br>
+26. [X-Big-Brother](https://github.com/charles2ke/X-Big-Brother) — Shows how your data, Wi-Fi and mobile network watch you, and hands control back to you.<br>
     <img alt="Field: Digital Privacy" src="https://img.shields.io/badge/Field-Digital%20Privacy-0A66C2?style=flat-square"> <img alt="Value: Control over personal data" src="https://img.shields.io/badge/Value-Control%20over%20personal%20data-2EA043?style=flat-square">
 <!-- repo-links:end -->
 
