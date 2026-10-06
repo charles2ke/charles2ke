@@ -332,5 +332,26 @@ class TestFetchRepositories(unittest.TestCase):
         self.assertEqual(repos[0]["name"], "repo-one")
 
 
+class TestPixelBadgeMapping(unittest.TestCase):
+    """Guards the badge mapping for the pixel repository."""
+
+    EXPECTED = ("Personal Media", "Private permission-controlled albums")
+
+    def test_mapping_is_registered(self):
+        self.assertEqual(REPO_BADGES.get("pixel"), self.EXPECTED)
+
+    def test_badges_do_not_fall_back_to_defaults(self):
+        badges = build_badges("pixel")
+        self.assertNotIn(f'alt="Field: {DEFAULT_BADGES[0]}"', badges)
+        self.assertNotIn(f'alt="Value: {DEFAULT_BADGES[1]}"', badges)
+
+    def test_readme_uses_mapped_badges(self):
+        readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(
+            encoding="utf-8"
+        )
+        section = readme.split(SECTION_START)[1].split(SECTION_END)[0]
+        self.assertIn(build_badges("pixel"), section)
+
+
 if __name__ == "__main__":
     unittest.main()

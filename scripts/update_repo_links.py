@@ -41,6 +41,7 @@ REPO_BADGES: dict[str, tuple[str, str]] = {
     "nakshatra": ("E-Commerce", "Streamlined online shopping"),
     "night-sky": ("Astronomy Visualisation", "Accurate sky reconstruction"),
     "opentrading": ("FinTech", "Global trade execution"),
+    "pixel": ("Personal Media", "Private permission-controlled albums"),
     "platform-shared": ("Platform Engineering", "Reusable shared services"),
     "portfolio-watcher": ("Personal Finance", "Unified portfolio view"),
     "social": ("Social Media", "Coordinated audience engagement"),
