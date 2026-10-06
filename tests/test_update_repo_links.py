@@ -332,10 +332,6 @@ class TestFetchRepositories(unittest.TestCase):
         self.assertEqual(repos[0]["name"], "repo-one")
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class TestPixelBadgeMapping(unittest.TestCase):
     """Guards the badge mapping for the pixel repository."""
 
@@ -355,3 +351,7 @@ class TestPixelBadgeMapping(unittest.TestCase):
         )
         section = readme.split(SECTION_START)[1].split(SECTION_END)[0]
         self.assertIn(build_badges("pixel"), section)
+
+
+if __name__ == "__main__":
+    unittest.main()
