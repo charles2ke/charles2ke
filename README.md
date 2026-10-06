@@ -80,7 +80,7 @@
 
 ## 🛠️ Inside This Repository
 
-- 🧰 [Scripts](https://github.com/charles2ke/charles2ke/blob/main/scripts/README.md) — automation for the dashboard data, repository links and repository topics
+- 🧰 [Scripts](https://github.com/charles2ke/charles2ke/blob/main/scripts/README.md) — automation for the dashboard data, repository links, repository topics and weekly package upgrades
 - 📚 [Wiki](https://github.com/charles2ke/charles2ke/blob/main/wiki/Home.md) — how this profile repository is put together
 
 ---

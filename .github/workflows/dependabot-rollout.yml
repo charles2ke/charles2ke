@@ -1,0 +1,60 @@
+name: Weekly dependency upgrades
+
+# Dependabot does the upgrading: every repository carries a
+# .github/dependabot.yml that moves its packages to the latest stable release
+# every Sunday. This workflow keeps that configuration in place — it re-detects
+# the package managers each repository uses and proposes an updated
+# configuration whenever one is missing or out of date, so repositories added
+# later are covered too.
+#
+# Without a DEPENDABOT_ROLLOUT_TOKEN secret (a token that can push branches and
+# open pull requests across the account) the run only reports what is missing.
+
+on:
+  schedule:
+    # Saturday morning, so every repository is configured before Dependabot's
+    # Sunday run.
+    - cron: "0 6 * * 6"
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Report the plan without writing any configuration.
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependabot-rollout
+  cancel-in-progress: false
+
+jobs:
+  rollout:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Roll out the weekly Dependabot configuration
+        env:
+          ROLLOUT_TOKEN: ${{ secrets.DEPENDABOT_ROLLOUT_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${ROLLOUT_TOKEN:-}" ]; then
+            echo "::notice::DEPENDABOT_ROLLOUT_TOKEN is not set; reporting the plan without writing."
+            python scripts/rollout_dependabot.py --dry-run
+          elif [ "${DRY_RUN:-false}" = "true" ]; then
+            python scripts/rollout_dependabot.py --dry-run
+          else
+            python scripts/rollout_dependabot.py
+          fi
