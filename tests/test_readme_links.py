@@ -400,6 +400,15 @@ class TestReachabilityDecisions(unittest.TestCase):
         with patch("tests.test_readme_links._live_status", return_value=404):
             checker.test_links_are_not_dead()  # must not raise
 
+    def test_permanently_gone_pages_link_fails(self):
+        url = f"{PAGES_BASE_URL}failures.html"
+        checker = self._checker({PAGES_HOST}, [url])
+
+        with patch(
+            "tests.test_readme_links._live_status", return_value=410
+        ), self.assertRaises(AssertionError):
+            checker.test_links_are_not_dead()
+
     def test_broken_external_link_fails_regardless_of_pages_state(self):
         url = "https://example.com/missing"
         checker = self._checker({"example.com"}, [url])

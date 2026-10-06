@@ -8,7 +8,8 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
+from urllib.error import HTTPError
 
 # Make the scripts package importable without installing.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -21,6 +22,7 @@ from scripts.rollout_dependabot import (
     BranchNotRolloutOwnedError,
     GitHubAPIError,
     Outcome,
+    _request,
     detect_ecosystems,
     ecosystem_for,
     ensure_branch,
@@ -232,6 +234,33 @@ class TestEnsureBranch(unittest.TestCase):
         request.assert_not_called()
 
 
+class TestRequests(unittest.TestCase):
+    def test_retries_failed_get_requests(self):
+        response = MagicMock()
+        response.read.return_value = b"{}"
+        response.__enter__.return_value = response
+        with (
+            patch(
+                "scripts.rollout_dependabot.urllib.request.urlopen",
+                side_effect=[HTTPError("https://example.com", 502, "Bad Gateway", {}, None), response],
+            ) as urlopen,
+            patch("scripts.rollout_dependabot.time.sleep"),
+        ):
+            self.assertEqual(_request("https://example.com", None), {})
+        self.assertEqual(urlopen.call_count, 2)
+
+    def test_does_not_retry_failed_write_requests(self):
+        with (
+            patch(
+                "scripts.rollout_dependabot.urllib.request.urlopen",
+                side_effect=HTTPError("https://example.com", 502, "Bad Gateway", {}, None),
+            ) as urlopen,
+            self.assertRaises(GitHubAPIError),
+        ):
+            _request("https://example.com", None, method="POST", payload={})
+        urlopen.assert_called_once()
+
+
 class TestRollOutRepository(unittest.TestCase):
     def roll_out(self, **kwargs):
         options = {
@@ -286,12 +315,27 @@ class TestRollOutRepository(unittest.TestCase):
         ensure.assert_not_called()
 
     def test_dry_run_reports_an_outdated_config_as_an_update(self):
+        current = f"{render_config({'npm': ['/']})}\n# stale\n"
         with (
             patch("scripts.rollout_dependabot.fetch_paths", return_value=(["package.json"], False)),
-            patch("scripts.rollout_dependabot.fetch_config", return_value=("version: 2\n", "sha1")),
+            patch("scripts.rollout_dependabot.fetch_config", return_value=(current, "sha1")),
         ):
             outcome = self.roll_out(dry_run=True)
         self.assertEqual(outcome.status, "would update")
+
+    def test_non_generated_config_is_left_alone(self):
+        current = "version: 2\nupdates:\n- package-ecosystem: npm\n  directory: /\n"
+        with (
+            patch("scripts.rollout_dependabot.fetch_paths", return_value=(["package.json"], False)),
+            patch("scripts.rollout_dependabot.fetch_config", return_value=(current, "sha1")),
+            patch("scripts.rollout_dependabot.write_config") as write,
+            patch("scripts.rollout_dependabot.ensure_branch") as ensure,
+        ):
+            outcome = self.roll_out()
+        self.assertEqual(outcome.status, "skipped")
+        self.assertIn("not managed", outcome.detail)
+        write.assert_not_called()
+        ensure.assert_not_called()
 
     def test_pull_request_flow_writes_to_the_working_branch(self):
         with (
@@ -317,9 +361,10 @@ class TestRollOutRepository(unittest.TestCase):
         self.assertEqual(outcome.url, "https://github.com/charles2ke/demo/pull/1")
 
     def test_direct_flow_commits_to_the_default_branch(self):
+        current = f"{render_config({'npm': ['/']})}\n# stale\n"
         with (
             patch("scripts.rollout_dependabot.fetch_paths", return_value=(["package.json"], False)),
-            patch("scripts.rollout_dependabot.fetch_config", return_value=("stale", "sha1")),
+            patch("scripts.rollout_dependabot.fetch_config", return_value=(current, "sha1")),
             patch("scripts.rollout_dependabot.ensure_branch") as ensure,
             patch("scripts.rollout_dependabot.write_config") as write,
             patch("scripts.rollout_dependabot.open_pull_request") as pull_request,
@@ -342,6 +387,27 @@ class TestRollOutRepository(unittest.TestCase):
             outcome = self.roll_out()
         self.assertTrue(outcome.failed)
         write.assert_not_called()
+
+    def test_branch_matching_default_branch_is_rejected_in_pull_request_mode(self):
+        with (
+            patch("scripts.rollout_dependabot.fetch_paths") as fetch_paths,
+            patch("scripts.rollout_dependabot.write_config") as write,
+        ):
+            outcome = self.roll_out(branch="main")
+        self.assertTrue(outcome.failed)
+        self.assertIn("matches the default branch", outcome.detail)
+        fetch_paths.assert_not_called()
+        write.assert_not_called()
+
+    def test_branch_matching_default_branch_is_allowed_in_direct_mode(self):
+        with (
+            patch("scripts.rollout_dependabot.fetch_paths", return_value=(["package.json"], False)),
+            patch("scripts.rollout_dependabot.fetch_config", return_value=(None, None)),
+            patch("scripts.rollout_dependabot.write_config") as write,
+        ):
+            outcome = self.roll_out(branch="main", direct=True)
+        self.assertEqual(outcome.status, "created")
+        write.assert_called_once()
 
 
 class TestFetchRepositories(unittest.TestCase):

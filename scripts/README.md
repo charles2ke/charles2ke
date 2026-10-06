@@ -160,9 +160,13 @@ into a single pull request. Where Dependabot supports it, `versioning-strategy:
 increase` is set so the manifest itself moves up to the new version.
 
 Repositories that already carry the rendered configuration are left untouched,
-so the script is safe to re-run. The rendered file replaces any hand-written
-`dependabot.yml`, in the same way `set-topics.sh` replaces a repository's topics
-— change the script, not the generated file.
+so the script is safe to re-run. Only configurations the script generated
+itself — those starting with its managed header — are replaced; a repository
+with a hand-written `dependabot.yml` is skipped and reported as `skipped`
+("existing Dependabot configuration is not managed by this script"), so its
+custom settings are preserved. To bring such a repository under the rollout,
+delete its `dependabot.yml` and re-run. For generated files, change the script,
+not the generated file.
 
 ### Usage
 

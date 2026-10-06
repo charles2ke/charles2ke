@@ -4,7 +4,7 @@
 The upgrading itself is done by Dependabot version updates, which move each
 dependency to its latest stable release and open a pull request. Dependabot is
 configured per repository, so this script is the rollout: for every repository
-owned by the account it
+owned by the account, it:
 
 1. reads the default branch's file list and detects which package managers the
    repository actually uses (``package.json`` -> npm, ``*.csproj`` -> nuget,
@@ -148,6 +148,7 @@ def _request(
     method: str = "GET",
     payload: dict | None = None,
 ) -> object:
+    """Make a GitHub API request, retrying only safe GET requests."""
     headers = {
         "Accept": "application/vnd.github+json",
         "User-Agent": USER_AGENT,
@@ -180,7 +181,7 @@ def _request(
             message = f"GitHub API request failed: invalid JSON response ({url})"
             retryable = True
 
-        if not retryable or attempt == MAX_ATTEMPTS:
+        if method != "GET" or not retryable or attempt == MAX_ATTEMPTS:
             raise GitHubAPIError(message)
 
         print(f"{message} (attempt {attempt}/{MAX_ATTEMPTS}), retrying...", file=sys.stderr)
@@ -372,10 +373,7 @@ def fetch_paths(full_name: str, ref: str, token: str | None) -> tuple[list[str],
         f"{API_ROOT}/repos/{full_name}/git/trees/"
         f"{urllib.parse.quote(ref, safe='')}?recursive=1"
     )
-    try:
-        payload = _request(url, token)
-    except NotFoundError:
-        return [], False
+    payload = _request(url, token)
 
     if not isinstance(payload, dict):
         return [], False
@@ -545,6 +543,14 @@ def roll_out_repository(
     full_name = str(repository.get("full_name", ""))
     default_branch = str(repository.get("default_branch") or "main")
 
+    if not direct and branch == default_branch:
+        return Outcome(
+            full_name,
+            "failed",
+            f"--branch '{branch}' matches the default branch '{default_branch}'; "
+            "refusing to open a pull request from the default branch onto itself",
+        )
+
     paths, truncated = fetch_paths(full_name, default_branch, token)
     if truncated:
         return Outcome(
@@ -563,6 +569,12 @@ def roll_out_repository(
     current, sha = fetch_config(full_name, default_branch, token)
     if current == desired:
         return Outcome(full_name, "up to date", summary)
+    if current is not None and not current.startswith(MANAGED_HEADER):
+        return Outcome(
+            full_name,
+            "skipped",
+            "existing Dependabot configuration is not managed by this script",
+        )
 
     if dry_run:
         status = "would update" if current is not None else "would create"
