@@ -56,7 +56,7 @@
     <img alt="Field: Astronomy Visualisation" src="https://img.shields.io/badge/Field-Astronomy%20Visualisation-0A66C2?style=flat-square"> <img alt="Value: Accurate sky reconstruction" src="https://img.shields.io/badge/Value-Accurate%20sky%20reconstruction-2EA043?style=flat-square">
 16. [OpenTrading](https://github.com/charles2ke/OpenTrading) — A trading platform for buying and selling stocks across exchanges worldwide, paired with Portfolio-Watcher for watching the same symbols.<br>
     <img alt="Field: FinTech" src="https://img.shields.io/badge/Field-FinTech-0A66C2?style=flat-square"> <img alt="Value: Global trade execution" src="https://img.shields.io/badge/Value-Global%20trade%20execution-2EA043?style=flat-square">
-17. [pixel](https://github.com/charles2ke/pixel) — Photo Album<br>
+17. [pixel](https://github.com/charles2ke/pixel) — Private photo and video album stored in a GitHub repository, with access controlled by that repository's permissions<br>
     <img alt="Field: Software Engineering" src="https://img.shields.io/badge/Field-Software%20Engineering-0A66C2?style=flat-square"> <img alt="Value: Hands-on learning and experimentation" src="https://img.shields.io/badge/Value-Hands--on%20learning%20and%20experimentation-2EA043?style=flat-square">
 18. [platform-shared](https://github.com/charles2ke/platform-shared) — Shared auth, profile and notification services reused by social, travel, workout and basa.<br>
     <img alt="Field: Platform Engineering" src="https://img.shields.io/badge/Field-Platform%20Engineering-0A66C2?style=flat-square"> <img alt="Value: Reusable shared services" src="https://img.shields.io/badge/Value-Reusable%20shared%20services-2EA043?style=flat-square">
