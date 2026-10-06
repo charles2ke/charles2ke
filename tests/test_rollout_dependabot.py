@@ -326,6 +326,7 @@ class TestRollOutRepository(unittest.TestCase):
         with (
             patch("scripts.rollout_dependabot.fetch_paths", return_value=(["package.json"], False)),
             patch("scripts.rollout_dependabot.fetch_config", return_value=(None, None)),
+            patch("scripts.rollout_dependabot.find_open_pull_request", return_value=None),
             patch("scripts.rollout_dependabot.branch_head", return_value="basesha"),
             patch("scripts.rollout_dependabot.ensure_branch") as ensure,
             patch("scripts.rollout_dependabot.write_config") as write,
@@ -344,6 +345,28 @@ class TestRollOutRepository(unittest.TestCase):
         self.assertEqual(outcome.status, "created")
         self.assertTrue(outcome.changed)
         self.assertEqual(outcome.url, "https://github.com/charles2ke/demo/pull/1")
+
+    def test_open_pull_request_is_reported_as_pending_without_branch_changes(self):
+        pull_request_url = "https://github.com/charles2ke/demo/pull/1"
+        with (
+            patch("scripts.rollout_dependabot.fetch_paths", return_value=(["package.json"], False)),
+            patch("scripts.rollout_dependabot.fetch_config", return_value=(None, None)),
+            patch(
+                "scripts.rollout_dependabot.find_open_pull_request",
+                return_value=pull_request_url,
+            ),
+            patch("scripts.rollout_dependabot.branch_head") as branch_head,
+            patch("scripts.rollout_dependabot.ensure_branch") as ensure,
+            patch("scripts.rollout_dependabot.write_config") as write,
+        ):
+            outcome = self.roll_out()
+
+        self.assertEqual(outcome.status, "pending")
+        self.assertIn("still open", outcome.detail)
+        self.assertEqual(outcome.url, pull_request_url)
+        branch_head.assert_not_called()
+        ensure.assert_not_called()
+        write.assert_not_called()
 
     def test_direct_flow_commits_to_the_default_branch(self):
         current = f"{render_config({'npm': ['/']})}\n# stale\n"
@@ -366,6 +389,7 @@ class TestRollOutRepository(unittest.TestCase):
         with (
             patch("scripts.rollout_dependabot.fetch_paths", return_value=(["package.json"], False)),
             patch("scripts.rollout_dependabot.fetch_config", return_value=(None, None)),
+            patch("scripts.rollout_dependabot.find_open_pull_request", return_value=None),
             patch("scripts.rollout_dependabot.branch_head", return_value=None),
             patch("scripts.rollout_dependabot.write_config") as write,
         ):

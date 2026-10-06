@@ -469,14 +469,9 @@ def open_pull_request(
     token: str | None,
 ) -> str:
     """Return the URL of the rollout pull request, opening one when needed."""
-    head = f"{full_name.split('/')[0]}:{branch}"
-    existing = _request(
-        f"{API_ROOT}/repos/{full_name}/pulls"
-        f"?state=open&head={urllib.parse.quote(head, safe=':')}",
-        token,
-    )
-    if isinstance(existing, list) and existing:
-        return str(existing[0].get("html_url", ""))
+    existing_url = find_open_pull_request(full_name, branch, token)
+    if existing_url is not None:
+        return existing_url
 
     created = _request(
         f"{API_ROOT}/repos/{full_name}/pulls",
@@ -492,6 +487,23 @@ def open_pull_request(
         },
     )
     return str(created.get("html_url", "")) if isinstance(created, dict) else ""
+
+
+def find_open_pull_request(
+    full_name: str,
+    branch: str,
+    token: str | None,
+) -> str | None:
+    """Return the URL of an open rollout pull request, if one exists."""
+    head = f"{full_name.split('/')[0]}:{branch}"
+    existing = _request(
+        f"{API_ROOT}/repos/{full_name}/pulls"
+        f"?state=open&head={urllib.parse.quote(head, safe=':')}",
+        token,
+    )
+    if isinstance(existing, list) and existing:
+        return str(existing[0].get("html_url", ""))
+    return None
 
 
 @dataclass
@@ -563,6 +575,15 @@ def roll_out_repository(
 
     target_branch = default_branch
     if not direct:
+        existing_url = find_open_pull_request(full_name, branch, token)
+        if existing_url is not None:
+            return Outcome(
+                full_name,
+                "pending",
+                f"existing rollout pull request is still open ({summary})",
+                existing_url,
+            )
+
         base_sha = branch_head(full_name, default_branch, token)
         if base_sha is None:
             return Outcome(full_name, "failed", f"no {default_branch} branch to branch from")
