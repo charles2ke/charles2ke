@@ -15,7 +15,6 @@ from urllib.error import HTTPError
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts.rollout_dependabot import (
-    COMMIT_MESSAGE,
     CONFIG_PATH,
     GROUP_NAME,
     SCHEDULE_DAY,
@@ -210,23 +209,9 @@ class TestEnsureBranch(unittest.TestCase):
             ensure_branch("charles2ke/demo", "chore/weekly-dependabot", "basesha", "t0ken")
         request.assert_not_called()
 
-    def test_force_updates_a_branch_this_script_previously_created(self):
+    def test_refuses_to_force_update_a_divergent_branch(self):
         with (
             patch("scripts.rollout_dependabot.branch_head", return_value="oldsha"),
-            patch(
-                "scripts.rollout_dependabot.commit_message", return_value=COMMIT_MESSAGE
-            ),
-            patch("scripts.rollout_dependabot._request") as request,
-        ):
-            ensure_branch("charles2ke/demo", "chore/weekly-dependabot", "basesha", "t0ken")
-        request.assert_called_once()
-        self.assertEqual(request.call_args.kwargs["method"], "PATCH")
-        self.assertEqual(request.call_args.kwargs["payload"]["force"], True)
-
-    def test_refuses_to_force_update_a_branch_it_did_not_create(self):
-        with (
-            patch("scripts.rollout_dependabot.branch_head", return_value="oldsha"),
-            patch("scripts.rollout_dependabot.commit_message", return_value="Unrelated work"),
             patch("scripts.rollout_dependabot._request") as request,
             self.assertRaises(BranchNotRolloutOwnedError),
         ):
