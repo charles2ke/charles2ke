@@ -45,7 +45,6 @@ jobs:
       - name: Roll out the weekly Dependabot configuration
         env:
           ROLLOUT_TOKEN: ${{ secrets.DEPENDABOT_ROLLOUT_TOKEN }}
-          GITHUB_TOKEN: ${{ github.token }}
           DRY_RUN: ${{ inputs.dry-run }}
         run: |
           set -euo pipefail
