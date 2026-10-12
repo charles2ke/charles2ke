@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://github.com/charles2ke"><img alt="GitHub" src="https://img.shields.io/badge/GitHub-charles2ke-181717?style=for-the-badge&logo=github"></a>
   <a href="https://www.linkedin.com/in/charles2ke"><img alt="LinkedIn" src="https://img.shields.io/badge/LinkedIn-charles2ke-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white"></a>
-  <a href="mailto:Charles2ke@hotmail.com"><img alt="Email" src="https://img.shields.io/badge/Email-Charles2ke@hotmail.com-EA4335?style=for-the-badge&logo=gmail&logoColor=white"></a>
+  <a href="mailto:Charles2ke@duck.com"><img alt="Email" src="https://img.shields.io/badge/Email-Charles2ke@hotmail.com-EA4335?style=for-the-badge&logo=gmail&logoColor=white"></a>
 </p>
 
 ---
