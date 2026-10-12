@@ -44,37 +44,41 @@
    <img alt="Field: Data Storage" src="https://img.shields.io/badge/Field-Data%20Storage-0A66C2?style=flat-square"> <img alt="Value: Git-backed persistence" src="https://img.shields.io/badge/Value-Git--backed%20persistence-2EA043?style=flat-square">
 10. [GraphQL](https://github.com/charles2ke/GraphQL) — Puts a GraphQL layer in front of any microservice so clients can ask for exactly the data they need.<br>
     <img alt="Field: API Engineering" src="https://img.shields.io/badge/Field-API%20Engineering-0A66C2?style=flat-square"> <img alt="Value: Flexible data access" src="https://img.shields.io/badge/Value-Flexible%20data%20access-2EA043?style=flat-square">
-11. [jarvis](https://github.com/charles2ke/jarvis) — A personal AI companion that keeps context across everyday tasks and conversations.<br>
-    <img alt="Field: Personal AI" src="https://img.shields.io/badge/Field-Personal%20AI-0A66C2?style=flat-square"> <img alt="Value: Always-on personal companion" src="https://img.shields.io/badge/Value-Always--on%20personal%20companion-2EA043?style=flat-square">
-12. [legacy](https://github.com/charles2ke/legacy) — A community digital legacy archive preserving people's stories, memories, and contributions, with a simple website and consent-first contribution guidelines.<br>
+11. [heal](https://github.com/charles2ke/heal) — Heal the world, make it a better place, for you and me and the entire human race.<br>
     <img alt="Field: Software Engineering" src="https://img.shields.io/badge/Field-Software%20Engineering-0A66C2?style=flat-square"> <img alt="Value: Hands-on learning and experimentation" src="https://img.shields.io/badge/Value-Hands--on%20learning%20and%20experimentation-2EA043?style=flat-square">
-13. [Message-Flow](https://github.com/charles2ke/Message-Flow) — A small, dependency-free Chain of Responsibility library for decoupling message handling.<br>
+12. [jarvis](https://github.com/charles2ke/jarvis) — A personal AI companion that keeps context across everyday tasks and conversations.<br>
+    <img alt="Field: Personal AI" src="https://img.shields.io/badge/Field-Personal%20AI-0A66C2?style=flat-square"> <img alt="Value: Always-on personal companion" src="https://img.shields.io/badge/Value-Always--on%20personal%20companion-2EA043?style=flat-square">
+13. [legacy](https://github.com/charles2ke/legacy) — A community digital legacy archive preserving people's stories, memories, and contributions, with a simple website and consent-first contribution guidelines.<br>
+    <img alt="Field: Software Engineering" src="https://img.shields.io/badge/Field-Software%20Engineering-0A66C2?style=flat-square"> <img alt="Value: Hands-on learning and experimentation" src="https://img.shields.io/badge/Value-Hands--on%20learning%20and%20experimentation-2EA043?style=flat-square">
+14. [Message-Flow](https://github.com/charles2ke/Message-Flow) — A small, dependency-free Chain of Responsibility library for decoupling message handling.<br>
     <img alt="Field: Software Design" src="https://img.shields.io/badge/Field-Software%20Design-0A66C2?style=flat-square"> <img alt="Value: Decoupled message handling" src="https://img.shields.io/badge/Value-Decoupled%20message%20handling-2EA043?style=flat-square">
-14. [Nakshatra](https://github.com/charles2ke/Nakshatra) — An online shopping portal covering browsing, cart and checkout end to end.<br>
+15. [Nakshatra](https://github.com/charles2ke/Nakshatra) — An online shopping portal covering browsing, cart and checkout end to end.<br>
     <img alt="Field: E-Commerce" src="https://img.shields.io/badge/Field-E--Commerce-0A66C2?style=flat-square"> <img alt="Value: Streamlined online shopping" src="https://img.shields.io/badge/Value-Streamlined%20online%20shopping-2EA043?style=flat-square">
-15. [Night-Sky](https://github.com/charles2ke/Night-Sky) — Reconstructs the night sky for any date and location in a consistent panoramic style.<br>
+16. [Night-Sky](https://github.com/charles2ke/Night-Sky) — Reconstructs the night sky for any date and location in a consistent panoramic style.<br>
     <img alt="Field: Astronomy Visualisation" src="https://img.shields.io/badge/Field-Astronomy%20Visualisation-0A66C2?style=flat-square"> <img alt="Value: Accurate sky reconstruction" src="https://img.shields.io/badge/Value-Accurate%20sky%20reconstruction-2EA043?style=flat-square">
-16. [OpenTrading](https://github.com/charles2ke/OpenTrading) — A trading platform for buying and selling stocks across exchanges worldwide, paired with Portfolio-Watcher for watching the same symbols.<br>
+17. [OpenTrading](https://github.com/charles2ke/OpenTrading) — A trading platform for buying and selling stocks across exchanges worldwide, paired with Portfolio-Watcher for watching the same symbols.<br>
     <img alt="Field: FinTech" src="https://img.shields.io/badge/Field-FinTech-0A66C2?style=flat-square"> <img alt="Value: Global trade execution" src="https://img.shields.io/badge/Value-Global%20trade%20execution-2EA043?style=flat-square">
-17. [pixel](https://github.com/charles2ke/pixel) — Private photo and video album stored in a GitHub repository, with access controlled by that repository's permissions<br>
+18. [pixel](https://github.com/charles2ke/pixel) — Self-hosted photo and video album that stores everything in your own GitHub repository via GitDb. Who can view, download or upload is set by the repository's access settings, using each visitor's own token. Includes thumbnail grids, video streaming with seeking, an installable app \(PWA\) and an admin-only visitor audit log. Built with FastAPI.<br>
     <img alt="Field: Personal Media" src="https://img.shields.io/badge/Field-Personal%20Media-0A66C2?style=flat-square"> <img alt="Value: Private permission-controlled albums" src="https://img.shields.io/badge/Value-Private%20permission--controlled%20albums-2EA043?style=flat-square">
-18. [platform-shared](https://github.com/charles2ke/platform-shared) — Shared auth, profile and notification services reused by social, travel, workout and basa.<br>
+19. [platform-shared](https://github.com/charles2ke/platform-shared) — Shared auth, profile and notification services reused by social, travel, workout and basa.<br>
     <img alt="Field: Platform Engineering" src="https://img.shields.io/badge/Field-Platform%20Engineering-0A66C2?style=flat-square"> <img alt="Value: Reusable shared services" src="https://img.shields.io/badge/Value-Reusable%20shared%20services-2EA043?style=flat-square">
-19. [Portfolio-Watcher](https://github.com/charles2ke/Portfolio-Watcher) — Gathers every financial account into one place so the whole portfolio is visible at a glance — the watchlist and alerting companion to OpenTrading.<br>
+20. [Portfolio-Watcher](https://github.com/charles2ke/Portfolio-Watcher) — Gathers every financial account into one place so the whole portfolio is visible at a glance — the watchlist and alerting companion to OpenTrading.<br>
     <img alt="Field: Personal Finance" src="https://img.shields.io/badge/Field-Personal%20Finance-0A66C2?style=flat-square"> <img alt="Value: Unified portfolio view" src="https://img.shields.io/badge/Value-Unified%20portfolio%20view-2EA043?style=flat-square">
-20. [social](https://github.com/charles2ke/social) — A social media manager for planning and coordinating posts across audiences.<br>
+21. [recorder](https://github.com/charles2ke/recorder) — Personal Thoughts Recorder<br>
+    <img alt="Field: Software Engineering" src="https://img.shields.io/badge/Field-Software%20Engineering-0A66C2?style=flat-square"> <img alt="Value: Hands-on learning and experimentation" src="https://img.shields.io/badge/Value-Hands--on%20learning%20and%20experimentation-2EA043?style=flat-square">
+22. [social](https://github.com/charles2ke/social) — A social media manager for planning and coordinating posts across audiences.<br>
     <img alt="Field: Social Media" src="https://img.shields.io/badge/Field-Social%20Media-0A66C2?style=flat-square"> <img alt="Value: Coordinated audience engagement" src="https://img.shields.io/badge/Value-Coordinated%20audience%20engagement-2EA043?style=flat-square">
-21. [tax-break](https://github.com/charles2ke/tax-break) — An online estimator that makes individual income tax easier to understand before filing.<br>
+23. [tax-break](https://github.com/charles2ke/tax-break) — An online estimator that makes individual income tax easier to understand before filing.<br>
     <img alt="Field: Taxation" src="https://img.shields.io/badge/Field-Taxation-0A66C2?style=flat-square"> <img alt="Value: Simplified tax filing" src="https://img.shields.io/badge/Value-Simplified%20tax%20filing-2EA043?style=flat-square">
-22. [tito](https://github.com/charles2ke/tito) — Keeps a team in sync on when everyone is in and when everyone is out — together in, together out.<br>
+24. [tito](https://github.com/charles2ke/tito) — Keeps a team in sync on when everyone is in and when everyone is out — together in, together out.<br>
     <img alt="Field: Team Coordination" src="https://img.shields.io/badge/Field-Team%20Coordination-0A66C2?style=flat-square"> <img alt="Value: Together in, together out" src="https://img.shields.io/badge/Value-Together%20in%2C%20together%20out-2EA043?style=flat-square">
-23. [TitoOS](https://github.com/charles2ke/TitoOS) — An operating system for agents: a runtime purpose-built for running and supervising them.<br>
+25. [TitoOS](https://github.com/charles2ke/TitoOS) — An operating system for agents: a runtime purpose-built for running and supervising them.<br>
     <img alt="Field: Agent Platforms" src="https://img.shields.io/badge/Field-Agent%20Platforms-0A66C2?style=flat-square"> <img alt="Value: Purpose-built agent runtime" src="https://img.shields.io/badge/Value-Purpose--built%20agent%20runtime-2EA043?style=flat-square">
-24. [travel](https://github.com/charles2ke/travel) — A place to explore, dream and discover trips worth taking.<br>
+26. [travel](https://github.com/charles2ke/travel) — A place to explore, dream and discover trips worth taking.<br>
     <img alt="Field: Travel" src="https://img.shields.io/badge/Field-Travel-0A66C2?style=flat-square"> <img alt="Value: Easier trip discovery" src="https://img.shields.io/badge/Value-Easier%20trip%20discovery-2EA043?style=flat-square">
-25. [workout](https://github.com/charles2ke/workout) — A weekly workout plan that makes training consistent and easy to follow.<br>
+27. [workout](https://github.com/charles2ke/workout) — A weekly workout plan that makes training consistent and easy to follow.<br>
     <img alt="Field: Health and Fitness" src="https://img.shields.io/badge/Field-Health%20and%20Fitness-0A66C2?style=flat-square"> <img alt="Value: Consistent training habits" src="https://img.shields.io/badge/Value-Consistent%20training%20habits-2EA043?style=flat-square">
-26. [X-Big-Brother](https://github.com/charles2ke/X-Big-Brother) — Shows how your data, Wi-Fi and mobile network watch you, and hands control back to you.<br>
+28. [X-Big-Brother](https://github.com/charles2ke/X-Big-Brother) — Shows how your data, Wi-Fi and mobile network watch you, and hands control back to you.<br>
     <img alt="Field: Digital Privacy" src="https://img.shields.io/badge/Field-Digital%20Privacy-0A66C2?style=flat-square"> <img alt="Value: Control over personal data" src="https://img.shields.io/badge/Value-Control%20over%20personal%20data-2EA043?style=flat-square">
 <!-- repo-links:end -->
 
