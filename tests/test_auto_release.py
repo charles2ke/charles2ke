@@ -25,7 +25,7 @@ from scripts.auto_release import (
     wants_major_bump,
 )
 
-NOW = dt.datetime(2026, 9, 17, 12, 0, tzinfo=dt.timezone.utc)
+NOW = dt.datetime(2026, 9, 17, 12, 0, tzinfo=dt.UTC)
 
 
 def commit(

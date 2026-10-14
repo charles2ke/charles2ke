@@ -165,8 +165,8 @@ def _parse_timestamp(value: str | None) -> dt.datetime | None:
     except ValueError:
         return None
     if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=dt.timezone.utc)
-    return parsed.astimezone(dt.timezone.utc)
+        parsed = parsed.replace(tzinfo=dt.UTC)
+    return parsed.astimezone(dt.UTC)
 
 
 def commit_timestamp(commit: dict) -> dt.datetime | None:
@@ -411,7 +411,7 @@ def evaluate(
     now: dt.datetime | None = None,
 ) -> Decision:
     """Decide whether ``repository`` needs a release, and cut one if so."""
-    now = now or dt.datetime.now(dt.timezone.utc)
+    now = now or dt.datetime.now(dt.UTC)
     branch = repository.default_branch()
     previous_tag, released_at = latest_release_tag(repository)
 
