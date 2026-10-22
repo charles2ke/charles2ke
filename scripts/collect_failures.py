@@ -159,8 +159,8 @@ def _parse_timestamp(value: object) -> dt.datetime | None:
     except ValueError:
         return None
     if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=dt.timezone.utc)
-    return parsed.astimezone(dt.timezone.utc)
+        parsed = parsed.replace(tzinfo=dt.UTC)
+    return parsed.astimezone(dt.UTC)
 
 
 def fetch_release_drift(
@@ -246,7 +246,7 @@ def fetch_release_drift(
 
 def drift_age_days(drift: dict, now: dt.datetime | None = None) -> float:
     """Return how long the oldest unreleased work has been waiting, in days."""
-    now = now or dt.datetime.now(dt.timezone.utc)
+    now = now or dt.datetime.now(dt.UTC)
     reference = _parse_timestamp(drift.get("released_at")) or _parse_timestamp(
         drift.get("last_commit_at")
     )
@@ -341,7 +341,7 @@ def build_snapshot(owner: str, token: str | None, drift_days: float | None = Non
     releases.sort(key=lambda entry: (-entry["age_days"], entry["name"].casefold()))
 
     return {
-        "generated_at": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generated_at": dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "owner": owner,
         "repository_count": len(repositories),
         "failure_count": total,
@@ -357,7 +357,7 @@ def build_snapshot(owner: str, token: str | None, drift_days: float | None = Non
 def degraded_snapshot(owner: str, message: str) -> dict:
     """Return an empty snapshot flagged as incomplete because of ``message``."""
     return {
-        "generated_at": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generated_at": dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "owner": owner,
         "repository_count": 0,
         "failure_count": 0,
