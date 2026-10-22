@@ -46,6 +46,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           ROLLOUT_TOKEN: ${{ secrets.DEPENDABOT_ROLLOUT_TOKEN }}
+          # Authenticates the read-only audit; anonymous API calls share a
+          # 60-requests-per-hour limit per runner IP and fail with 403.
+          GITHUB_TOKEN: ${{ github.token }}
           DRY_RUN: ${{ inputs.dry-run }}
         run: |
           set -euo pipefail
