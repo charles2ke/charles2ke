@@ -249,12 +249,12 @@ class TestReleaseDrift(unittest.TestCase):
             fetch_release_drift("charles2ke/demo", "trunk", None)
 
     def test_age_is_measured_from_the_last_release(self):
-        now = dt.datetime(2026, 9, 17, 8, 0, tzinfo=dt.timezone.utc)
+        now = dt.datetime(2026, 9, 17, 8, 0, tzinfo=dt.UTC)
         drift = {"released_at": "2026-09-10T08:00:00Z", "last_commit_at": "2026-09-16T08:00:00Z"}
         self.assertEqual(7.0, drift_age_days(drift, now))
 
     def test_age_falls_back_to_the_last_commit(self):
-        now = dt.datetime(2026, 9, 17, 8, 0, tzinfo=dt.timezone.utc)
+        now = dt.datetime(2026, 9, 17, 8, 0, tzinfo=dt.UTC)
         drift = {"released_at": "", "last_commit_at": "2026-09-15T08:00:00Z"}
         self.assertEqual(2.0, drift_age_days(drift, now))
 
