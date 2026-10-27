@@ -76,9 +76,21 @@ jobs:
     needs: build
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment_retry.outputs.page_url || steps.deployment_first.outputs.page_url }}
 
     steps:
+      # A previous deployment (e.g. from a cancelled run) can still be in
+      # progress; wait for it to finish and retry once.
       - name: Deploy to GitHub Pages
-        id: deployment
+        id: deployment_first
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+
+      - name: Wait before retrying deployment
+        if: steps.deployment_first.outcome == 'failure'
+        run: sleep 90
+
+      - name: Retry deploy to GitHub Pages
+        id: deployment_retry
+        if: steps.deployment_first.outcome == 'failure'
         uses: actions/deploy-pages@v4
