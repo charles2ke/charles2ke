@@ -44,7 +44,6 @@ jobs:
 
       - name: Roll out the weekly Dependabot configuration
         env:
-          GITHUB_TOKEN: ${{ github.token }}
           ROLLOUT_TOKEN: ${{ secrets.DEPENDABOT_ROLLOUT_TOKEN }}
           # Authenticates the read-only audit; anonymous API calls share a
           # 60-requests-per-hour limit per runner IP and fail with 403.
