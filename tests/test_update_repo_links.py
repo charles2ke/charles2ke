@@ -353,5 +353,40 @@ class TestPixelBadgeMapping(unittest.TestCase):
         self.assertIn(build_badges("pixel"), section)
 
 
+class TestRecentRepoBadgeMappings(unittest.TestCase):
+    """Guards the badge mappings for beat-it, heal, legacy, recorder and SI."""
+
+    EXPECTED: ClassVar[dict[str, tuple[str, str]]] = {
+        "beat-it": ("Cancer Information", "Weekly-updated cancer research"),
+        "heal": ("Wellbeing", "Small steps toward a better world"),
+        "legacy": ("Digital Legacy", "Consent-first shared memories"),
+        "recorder": ("Speech Recognition", "Live thought transcription"),
+        "si": ("AI Platforms", "Local-first AI app development"),
+    }
+    REPO_NAMES: ClassVar[tuple[str, ...]] = ("beat-it", "heal", "legacy", "recorder", "SI")
+
+    def test_mappings_are_registered(self):
+        for key, expected in self.EXPECTED.items():
+            with self.subTest(repo=key):
+                self.assertEqual(REPO_BADGES.get(key), expected)
+
+    def test_badges_do_not_fall_back_to_defaults(self):
+        for name in self.REPO_NAMES:
+            with self.subTest(repo=name):
+                badges = build_badges(name)
+                self.assertNotIn(f'alt="Field: {DEFAULT_BADGES[0]}"', badges)
+                self.assertNotIn(f'alt="Value: {DEFAULT_BADGES[1]}"', badges)
+
+    def test_readme_lists_repositories_with_mapped_badges(self):
+        readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(
+            encoding="utf-8"
+        )
+        section = readme.split(SECTION_START)[1].split(SECTION_END)[0]
+        for name in self.REPO_NAMES:
+            with self.subTest(repo=name):
+                self.assertIn(f"](https://github.com/charles2ke/{name})", section)
+                self.assertIn(build_badges(name), section)
+
+
 if __name__ == "__main__":
     unittest.main()
