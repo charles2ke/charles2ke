@@ -113,14 +113,14 @@ jobs:
       # The helper lives in the profile repository, so check that out rather
       # than the caller: the decision only needs the GitHub API.
       - name: Check out release tooling
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: charles2ke/charles2ke
           path: .auto-release
           persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.x"
 
