@@ -32,10 +32,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Install pandoc
         run: sudo apt-get install -y pandoc
@@ -54,7 +54,7 @@ jobs:
           sed -i 's/<body>/<body class="markdown-body" style="max-width:800px;margin:2rem auto;padding:0 1rem;">/' _site/index.html
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.x"
 
@@ -67,7 +67,7 @@ jobs:
           python scripts/collect_failures.py --output _site/failures.json
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: _site
 
@@ -83,7 +83,7 @@ jobs:
       # progress; wait for it to finish and retry once.
       - name: Deploy to GitHub Pages
         id: deployment_first
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
         continue-on-error: true
 
       - name: Wait before retrying deployment
@@ -93,4 +93,4 @@ jobs:
       - name: Retry deploy to GitHub Pages
         id: deployment_retry
         if: steps.deployment_first.outcome == 'failure'
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
