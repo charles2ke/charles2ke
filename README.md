@@ -36,7 +36,7 @@
    <img alt="Field: Private AI" src="https://img.shields.io/badge/Field-Private%20AI-0A66C2?style=flat-square"> <img alt="Value: Grounded personal answers" src="https://img.shields.io/badge/Value-Grounded%20personal%20answers-2EA043?style=flat-square">
 6. [basa](https://github.com/charles2ke/basa) — A shared dashboard that keeps a family's elder-care circle coordinated around one plan.<br>
    <img alt="Field: Elder Care" src="https://img.shields.io/badge/Field-Elder%20Care-0A66C2?style=flat-square"> <img alt="Value: Coordinated caregiving" src="https://img.shields.io/badge/Value-Coordinated%20caregiving-2EA043?style=flat-square">
-7. [beat-it](https://github.com/charles2ke/beat-it) — Beat Cancer 🆘<br>
+7. [beat-it](https://github.com/charles2ke/beat-it) — Beat Cancer 🆘<br>A free, static website for searching cancer questions, treatments, medicines, clinical trials and the latest research.<br> 
    <img alt="Field: Cancer Information" src="https://img.shields.io/badge/Field-Cancer%20Information-0A66C2?style=flat-square"> <img alt="Value: Weekly-updated cancer research" src="https://img.shields.io/badge/Value-Weekly--updated%20cancer%20research-2EA043?style=flat-square">
 8. [crabs](https://github.com/charles2ke/crabs) — Makes open agent access safer by putting security controls around Open Claw.<br>
    <img alt="Field: Security" src="https://img.shields.io/badge/Field-Security-0A66C2?style=flat-square"> <img alt="Value: Safer open agent access" src="https://img.shields.io/badge/Value-Safer%20open%20agent%20access-2EA043?style=flat-square">
