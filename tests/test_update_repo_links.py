@@ -181,8 +181,8 @@ class TestLatestRepoBadgeMappings(unittest.TestCase):
 
     EXPECTED: ClassVar[dict[str, tuple[str, str]]] = {
         "aero": ("Aerospace Engineering", "Applied flight fundamentals"),
-        "jarvis": ("Personal AI", "Always-on personal companion"),
-        "tito": ("Team Coordination", "Together in, together out"),
+        "jarvis": ("Personal AI", "Private offline assistant"),
+        "tito": ("Scheduling", "All-or-nothing group release"),
     }
 
     def test_mappings_are_registered(self):
@@ -386,6 +386,25 @@ class TestRecentRepoBadgeMappings(unittest.TestCase):
             with self.subTest(repo=name):
                 self.assertIn(f"](https://github.com/charles2ke/{name})", section)
                 self.assertIn(build_badges(name), section)
+
+
+class TestReadmeBadgesMatchMappings(unittest.TestCase):
+    """Every README entry must carry the badges its REPO_BADGES mapping renders."""
+
+    def test_every_listed_repository_uses_its_mapped_badges(self):
+        readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(
+            encoding="utf-8"
+        )
+        lines = readme.split(SECTION_START)[1].split(SECTION_END)[0].splitlines()
+        checked = 0
+        for index, line in enumerate(lines):
+            match = re.match(r"\d+\. \[([^\]]+)\]\(", line)
+            if not match:
+                continue
+            checked += 1
+            with self.subTest(repo=match.group(1)):
+                self.assertEqual(lines[index + 1].strip(), build_badges(match.group(1)))
+        self.assertGreater(checked, 0)
 
 
 if __name__ == "__main__":
