@@ -24,7 +24,7 @@
 ## 🔗 My Repositories
 
 <!-- repo-links:start -->
-1. [5-Mins](https://github.com/charles2ke/5-Mins) — Watches the places you care about across five free public disaster feeds and lets you warn your people in one tap by email, text or WhatsApp — no account, no server, data stays on your device.<br>
+1. [5-Mins](https://github.com/charles2ke/5-Mins) — Watches the places you care about across five free public disaster feeds and lets you warn your people in one tap by email, text or WhatsApp — no account, no server; places and contacts are stored on your device, and public feeds only receive coordinates or search text.<br>
    <img alt="Field: Disaster Alerts" src="https://img.shields.io/badge/Field-Disaster%20Alerts-0A66C2?style=flat-square"> <img alt="Value: Early warning awareness" src="https://img.shields.io/badge/Value-Early%20warning%20awareness-2EA043?style=flat-square">
 2. [Advantage](https://github.com/charles2ke/Advantage) — Brings insurance shopping, policies and claims into a single platform instead of scattered portals.<br>
    <img alt="Field: Insurance" src="https://img.shields.io/badge/Field-Insurance-0A66C2?style=flat-square"> <img alt="Value: One-stop policy management" src="https://img.shields.io/badge/Value-One--stop%20policy%20management-2EA043?style=flat-square">
@@ -66,7 +66,7 @@
     <img alt="Field: Platform Engineering" src="https://img.shields.io/badge/Field-Platform%20Engineering-0A66C2?style=flat-square"> <img alt="Value: Reusable shared services" src="https://img.shields.io/badge/Value-Reusable%20shared%20services-2EA043?style=flat-square">
 21. [Portfolio-Watcher](https://github.com/charles2ke/Portfolio-Watcher) — An investment research workspace — screen securities, research companies, value them with an editable DCF, stress-test a portfolio, and get price alerts by email, SMS or WhatsApp. The research and alerting companion to OpenTrading.<br>
     <img alt="Field: Investment Research" src="https://img.shields.io/badge/Field-Investment%20Research-0A66C2?style=flat-square"> <img alt="Value: Research-to-portfolio workflow" src="https://img.shields.io/badge/Value-Research--to--portfolio%20workflow-2EA043?style=flat-square">
-22. [recorder](https://github.com/charles2ke/recorder) — Speak your thoughts and watch them become editable notes in real time — live in-browser transcription with voice punctuation, saved notes, optional audio and Markdown export.<br>
+22. [recorder](https://github.com/charles2ke/recorder) — Speak your thoughts and watch them become editable notes in real time — live transcription with your browser's built-in speech recognition, voice punctuation, saved notes, optional audio and Markdown export.<br>
     <img alt="Field: Speech Recognition" src="https://img.shields.io/badge/Field-Speech%20Recognition-0A66C2?style=flat-square"> <img alt="Value: Live thought transcription" src="https://img.shields.io/badge/Value-Live%20thought%20transcription-2EA043?style=flat-square">
 23. [SI](https://github.com/charles2ke/SI) — Super Intelligence — a local-first platform for building AI apps: model gateway, knowledge bases, tool-using agents with approval steps, prompt versions, evals and traces.<br>
     <img alt="Field: AI Platforms" src="https://img.shields.io/badge/Field-AI%20Platforms-0A66C2?style=flat-square"> <img alt="Value: Local-first AI app development" src="https://img.shields.io/badge/Value-Local--first%20AI%20app%20development-2EA043?style=flat-square">
