@@ -279,8 +279,13 @@ class Repository:
     def combined_status(self, ref: str) -> str:
         ref_path = urllib.parse.quote(ref, safe="")
         payload = self.get(f"/commits/{ref_path}/status")
-        state = payload.get("state") if isinstance(payload, dict) else None
-        return str(state or "pending")
+        if not isinstance(payload, dict):
+            return "pending"
+        # GitHub reports "pending" when a commit has no statuses at all, which is
+        # the norm for repositories that only use Actions check runs.
+        if payload.get("total_count") == 0:
+            return "success"
+        return str(payload.get("state") or "pending")
 
     def create_release(self, tag: str, target: str) -> dict:
         payload = _request(

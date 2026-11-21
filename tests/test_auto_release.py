@@ -135,6 +135,22 @@ class TestRepositoryPagination(unittest.TestCase):
         self.assertIn("page=2", get.call_args_list[1].args[0])
 
 
+class TestCombinedStatus(unittest.TestCase):
+    def test_commit_without_statuses_is_green(self):
+        repository = Repository("charles2ke/demo", "token")
+        payload = {"state": "pending", "total_count": 0, "statuses": []}
+
+        with patch.object(repository, "get", return_value=payload):
+            self.assertEqual("success", repository.combined_status("main"))
+
+    def test_pending_statuses_stay_pending(self):
+        repository = Repository("charles2ke/demo", "token")
+        payload = {"state": "pending", "total_count": 1, "statuses": [{"state": "pending"}]}
+
+        with patch.object(repository, "get", return_value=payload):
+            self.assertEqual("pending", repository.combined_status("main"))
+
+
 class TestVersions(unittest.TestCase):
     def test_parses_major_only_and_major_minor(self):
         self.assertEqual((1, 0), parse_version("v1"))
